@@ -16,7 +16,7 @@ import {
   IconReport,
   IconSearch,
   IconSettings,
-  IconUsers,
+  IconUsers
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/nav-documents"
@@ -30,7 +30,7 @@ import {
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarMenuItem
 } from "@/components/ui/sidebar"
 import { useCurrentUser } from "@/hooks/use-current-user"
 
@@ -38,29 +38,29 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
-      icon: IconDashboard,
+      url: "/dashboard",
+      icon: IconDashboard
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: IconListDetails,
+      title: "Quotations",
+      url: "/dashboard/quotations",
+      icon: IconListDetails
     },
     {
       title: "Analytics",
       url: "#",
-      icon: IconChartBar,
+      icon: IconChartBar
     },
     {
       title: "Projects",
       url: "#",
-      icon: IconFolder,
+      icon: IconFolder
     },
     {
       title: "Team",
       url: "#",
-      icon: IconUsers,
-    },
+      icon: IconUsers
+    }
   ],
   navClouds: [
     {
@@ -71,13 +71,13 @@ const data = {
       items: [
         {
           title: "Active Proposals",
-          url: "#",
+          url: "#"
         },
         {
           title: "Archived",
-          url: "#",
-        },
-      ],
+          url: "#"
+        }
+      ]
     },
     {
       title: "Proposal",
@@ -86,13 +86,13 @@ const data = {
       items: [
         {
           title: "Active Proposals",
-          url: "#",
+          url: "#"
         },
         {
           title: "Archived",
-          url: "#",
-        },
-      ],
+          url: "#"
+        }
+      ]
     },
     {
       title: "Prompts",
@@ -101,49 +101,49 @@ const data = {
       items: [
         {
           title: "Active Proposals",
-          url: "#",
+          url: "#"
         },
         {
           title: "Archived",
-          url: "#",
-        },
-      ],
-    },
+          url: "#"
+        }
+      ]
+    }
   ],
   navSecondary: [
     {
       title: "Settings",
       url: "#",
-      icon: IconSettings,
+      icon: IconSettings
     },
     {
       title: "Get Help",
       url: "#",
-      icon: IconHelp,
+      icon: IconHelp
     },
     {
       title: "Search",
       url: "#",
-      icon: IconSearch,
-    },
+      icon: IconSearch
+    }
   ],
   documents: [
     {
       name: "Data Library",
       url: "#",
-      icon: IconDatabase,
+      icon: IconDatabase
     },
     {
       name: "Reports",
       url: "#",
-      icon: IconReport,
+      icon: IconReport
     },
     {
       name: "Word Assistant",
       url: "#",
-      icon: IconFileWord,
-    },
-  ],
+      icon: IconFileWord
+    }
+  ]
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -154,10 +154,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
+            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />
                 <span className="text-base font-semibold">Acme Inc.</span>
