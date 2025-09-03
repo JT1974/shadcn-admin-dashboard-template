@@ -1,0 +1,1 @@
+type IPartner = PartnersTable["Row"]

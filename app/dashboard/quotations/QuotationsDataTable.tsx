@@ -26,8 +26,7 @@ import {
   IconGripVertical,
   IconLayoutColumns,
   IconLoader,
-  IconPlus,
-  IconTrendingUp
+  IconPlus
 } from "@tabler/icons-react"
 import {
   ColumnDef,
@@ -44,14 +43,9 @@ import {
   useReactTable,
   VisibilityState
 } from "@tanstack/react-table"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import { toast } from "sonner"
-import { z } from "zod"
-
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Drawer,
@@ -74,20 +68,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-// TODO: felhasználás specifikus
-export const schema = z.object({
-  id: z.number(),
-  header: z.string(),
-  type: z.string(),
-  status: z.string(),
-  target: z.string(),
-  limit: z.string(),
-  reviewer: z.string()
-})
+import Link from "next/link"
+import { formatDate } from "@/lib/utils"
+import z from "zod"
+import { quotationFormSchema } from "@/app/dashboard/quotations/schemas"
+import { Textarea } from "@/components/ui/textarea"
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
@@ -109,8 +96,7 @@ function DragHandle({ id }: { id: number }) {
   )
 }
 
-// TODO: felhasználás specifikus
-const columns: ColumnDef<z.infer<typeof schema>>[] = [
+const columns: ColumnDef<IQuotation>[] = [
   {
     id: "drag",
     header: () => null,
@@ -140,30 +126,41 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     enableHiding: false
   },
   {
-    accessorKey: "header",
-    header: "Header",
+    accessorKey: "number",
+    header: "Number",
     cell: ({ row }) => {
-      return <TableCellViewer item={row.original} />
+      return (
+        <TableCellViewer
+          item={{
+            ...row.original,
+            customerId: row.original.customer?.id ?? null,
+            taskIds: row.original.tasks?.map((task) => task.id ?? 0) ?? [],
+            paymentTime: String(row.original.paymentTime ?? 0),
+            fulfillmentTime: String(row.original.fulfillmentTime ?? 0)
+          }}
+        />
+      )
     },
     enableHiding: false
   },
   {
-    accessorKey: "type",
-    header: "Section Type",
-    cell: ({ row }) => (
-      <div className="w-32">
-        <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.original.type}
-        </Badge>
-      </div>
-    )
+    accessorKey: "description",
+    header: "Description",
+    cell: ({ row }) => <p className="max-w-160 text-wrap">{row.original.description}</p>,
+    enableHiding: true
+  },
+  {
+    accessorKey: "reference",
+    header: "Reference",
+    cell: ({ row }) => row.original.reference,
+    enableHiding: true
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => (
       <Badge variant="outline" className="text-muted-foreground px-1.5">
-        {row.original.status === "Done" ? (
+        {row.original.status === "accepted" ? (
           <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
         ) : (
           <IconLoader />
@@ -173,87 +170,115 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
     )
   },
   {
-    accessorKey: "target",
-    header: () => <div className="w-full text-right">Target</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
-            success: "Done",
-            error: "Error"
-          })
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-target`} className="sr-only">
-          Target
-        </Label>
-        <Input
-          className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-          defaultValue={row.original.target}
-          id={`${row.original.id}-target`}
-        />
-      </form>
-    )
+    accessorKey: "tasks",
+    header: "Tasks",
+    cell: ({ row }) =>
+      row.original.tasks?.map((task) => (
+        <Link key={task.id} href={`/dashboard/tasks/${task.id}`}>
+          <Badge variant="outline" className="text-muted-foreground px-1.5">
+            {/* taskStatus: "open" | "inprogress" | "closed" | "suspended" | "continuous" | "cancelled" */}
+            {task.status === "closed" ? (
+              <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+            ) : task.status === "suspended" ? (
+              <IconCircleCheckFilled className="fill-orange-500 dark:fill-orange-400" />
+            ) : task.status === "cancelled" ? (
+              <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400" />
+            ) : (
+              <IconLoader />
+            )}
+            {task.id}
+          </Badge>
+        </Link>
+      ))
   },
   {
-    accessorKey: "limit",
-    header: () => <div className="w-full text-right">Limit</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault()
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
-            success: "Done",
-            error: "Error"
-          })
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-          Limit
-        </Label>
-        <Input
-          className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-          defaultValue={row.original.limit}
-          id={`${row.original.id}-limit`}
-        />
-      </form>
-    )
+    accessorKey: "createdAt",
+    header: "Created",
+    cell: ({ row }) => <p>{formatDate(row.original.createdAt)}</p>,
+    enableHiding: true
   },
-  {
-    accessorKey: "reviewer",
-    header: "Reviewer",
-    cell: ({ row }) => {
-      const isAssigned = row.original.reviewer !== "Assign reviewer"
+  // {
+  //   accessorKey: "target",
+  //   header: () => <div className="w-full text-right">Target</div>,
+  //   cell: ({ row }) => (
+  //     <form
+  //       onSubmit={(e) => {
+  //         e.preventDefault()
+  //         toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+  //           loading: `Saving ${row.original.header}`,
+  //           success: "Done",
+  //           error: "Error"
+  //         })
+  //       }}
+  //     >
+  //       <Label htmlFor={`${row.original.id}-target`} className="sr-only">
+  //         Target
+  //       </Label>
+  //       <Input
+  //         className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
+  //         defaultValue={row.original.target}
+  //         id={`${row.original.id}-target`}
+  //       />
+  //     </form>
+  //   )
+  // },
+  // {
+  //   accessorKey: "limit",
+  //   header: () => <div className="w-full text-right">Limit</div>,
+  //   cell: ({ row }) => (
+  //     <form
+  //       onSubmit={(e) => {
+  //         e.preventDefault()
+  //         toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
+  //           loading: `Saving ${row.original.header}`,
+  //           success: "Done",
+  //           error: "Error"
+  //         })
+  //       }}
+  //     >
+  //       <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
+  //         Limit
+  //       </Label>
+  //       <Input
+  //         className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
+  //         defaultValue={row.original.limit}
+  //         id={`${row.original.id}-limit`}
+  //       />
+  //     </form>
+  //   )
+  // },
+  // {
+  //   accessorKey: "reviewer",
+  //   header: "Reviewer",
+  //   cell: ({ row }) => {
+  //     const isAssigned = row.original.reviewer !== "Assign reviewer"
 
-      if (isAssigned) {
-        return row.original.reviewer
-      }
+  //     if (isAssigned) {
+  //       return row.original.reviewer
+  //     }
 
-      return (
-        <>
-          <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
-            Reviewer
-          </Label>
-          <Select>
-            <SelectTrigger
-              className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
-              size="sm"
-              id={`${row.original.id}-reviewer`}
-            >
-              <SelectValue placeholder="Assign reviewer" />
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-              <SelectItem value="Jamik Tashpulatov">Jamik Tashpulatov</SelectItem>
-            </SelectContent>
-          </Select>
-        </>
-      )
-    }
-  },
+  //     return (
+  //       <>
+  //         <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
+  //           Reviewer
+  //         </Label>
+  //         <Select>
+  //           <SelectTrigger
+  //             className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
+  //             size="sm"
+  //             id={`${row.original.id}-reviewer`}
+  //           >
+  //             <SelectValue placeholder="Assign reviewer" />
+  //           </SelectTrigger>
+  //           <SelectContent align="end">
+  //             <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
+  //             <SelectItem value="Jamik Tashpulatov">Jamik Tashpulatov</SelectItem>
+  //           </SelectContent>
+  //         </Select>
+  //       </>
+  //     )
+  //   }
+  // },
   {
     id: "actions",
     cell: () => (
@@ -276,7 +301,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   }
 ]
 
-function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
+function DraggableRow({ row }: { row: Row<IQuotation> }) {
   const { transform, transition, setNodeRef, isDragging } = useSortable({
     id: row.original.id
   })
@@ -299,7 +324,7 @@ function DraggableRow({ row }: { row: Row<z.infer<typeof schema>> }) {
   )
 }
 
-export function DataTable({ data: initialData }: { data: z.infer<typeof schema>[] }) {
+export function QuotationsDataTable({ data: initialData }: { data: IQuotation[] }) {
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -542,162 +567,128 @@ export function DataTable({ data: initialData }: { data: z.infer<typeof schema>[
   )
 }
 
-// TODO: felhasználás specifikus
-const chartData = [
-  { month: "January", desktop: 186, mobile: 80 },
-  { month: "February", desktop: 305, mobile: 200 },
-  { month: "March", desktop: 237, mobile: 120 },
-  { month: "April", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "June", desktop: 214, mobile: 140 }
-]
-
-// TODO: felhasználás specifikus
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)"
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)"
+function TableCellViewer({
+  item
+}: {
+  item: z.infer<typeof quotationFormSchema> & {
+    customer: IPartner | null
+    tasks: ITask[] | null
   }
-} satisfies ChartConfig
-
-// TODO: felhasználás specifikus (chart area, summary és form)
-function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
+}) {
   const isMobile = useIsMobile()
 
   return (
     <Drawer direction={isMobile ? "bottom" : "right"}>
       <DrawerTrigger asChild>
         <Button variant="link" className="text-foreground w-fit px-0 text-left">
-          {item.header}
+          {item.number}
         </Button>
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.header}</DrawerTitle>
-          <DrawerDescription>Showing total visitors for the last 6 months</DrawerDescription>
+          <DrawerTitle>{item.number}</DrawerTitle>
+          <DrawerDescription className="capitalize">
+            {item.customer?.name} {item.customer?.companyForm}
+          </DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          {!isMobile && (
-            <>
-              <ChartContainer config={chartConfig}>
-                <AreaChart
-                  accessibilityLayer
-                  data={chartData}
-                  margin={{
-                    left: 0,
-                    right: 10
-                  }}
-                >
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                    hide
-                  />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                  <Area
-                    dataKey="mobile"
-                    type="natural"
-                    fill="var(--color-mobile)"
-                    fillOpacity={0.6}
-                    stroke="var(--color-mobile)"
-                    stackId="a"
-                  />
-                  <Area
-                    dataKey="desktop"
-                    type="natural"
-                    fill="var(--color-desktop)"
-                    fillOpacity={0.4}
-                    stroke="var(--color-desktop)"
-                    stackId="a"
-                  />
-                </AreaChart>
-              </ChartContainer>
-              <Separator />
-              <div className="grid gap-2">
-                <div className="flex gap-2 leading-none font-medium">
-                  Trending up by 5.2% this month <IconTrendingUp className="size-4" />
-                </div>
-                <div className="text-muted-foreground">
-                  Showing total visitors for the last 6 months. This is just some random text to test the layout. It
-                  spans multiple lines and should wrap around.
-                </div>
-              </div>
-              <Separator />
-            </>
-          )}
-          <form className="flex flex-col gap-4">
+          <form
+            id="form-id"
+            method="post"
+            className="flex flex-col gap-4"
+            onSubmit={(e) => {
+              e.preventDefault()
+              const data = new FormData(e.target as HTMLFormElement)
+
+              let dataObj = {}
+
+              for (const pair of data.entries()) {
+                dataObj = { ...dataObj, [pair[0]]: pair[1] }
+              }
+
+              console.log(dataObj)
+            }}
+          >
             <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
-              <Input id="header" defaultValue={item.header} />
+              <Label htmlFor="description">Description</Label>
+              <Textarea name="description" defaultValue={item.description ?? ""} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
-                <Select defaultValue={item.type}>
-                  <SelectTrigger id="type" className="w-full">
-                    <SelectValue placeholder="Select a type" />
+                <Label htmlFor="reference">Reference</Label>
+                <Select name="reference" defaultValue={item.reference ?? "existing partner"}>
+                  <SelectTrigger id="reference" className="w-full">
+                    <SelectValue placeholder="Select a reference" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Table of Contents">Table of Contents</SelectItem>
-                    <SelectItem value="Executive Summary">Executive Summary</SelectItem>
-                    <SelectItem value="Technical Approach">Technical Approach</SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Capabilities">Capabilities</SelectItem>
-                    <SelectItem value="Focus Documents">Focus Documents</SelectItem>
-                    <SelectItem value="Narrative">Narrative</SelectItem>
-                    <SelectItem value="Cover Page">Cover Page</SelectItem>
+                    <SelectItem value="Ivett">Ivett</SelectItem>
+                    <SelectItem value="existing partner">existing partner</SelectItem>
+                    <SelectItem value="website">website</SelectItem>
+                    <SelectItem value="google">google</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex flex-col gap-3">
                 <Label htmlFor="status">Status</Label>
-                <Select defaultValue={item.status}>
+                <Select name="status" defaultValue={item.status ?? "created"}>
                   <SelectTrigger id="status" className="w-full">
                     <SelectValue placeholder="Select a status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Done">Done</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Not Started">Not Started</SelectItem>
+                    <SelectItem value="created">created</SelectItem>
+                    <SelectItem value="accepted">accepted</SelectItem>
+                    <SelectItem value="rejected">rejected</SelectItem>
+                    <SelectItem value="deleted">deleted</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
-                <Input id="target" defaultValue={item.target} />
+                <Label htmlFor="fulfillmentTime">Fulfillment time</Label>
+                <Input name="fulfillmentTime" defaultValue={item.fulfillmentTime ?? 0} />
               </div>
               <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
-                <Input id="limit" defaultValue={item.limit} />
+                <Label htmlFor="fulfillmentTimeUnit">Unit</Label>
+                <Select name="fulfillmentTimeUnit" defaultValue={item.fulfillmentTimeUnit ?? "months"}>
+                  <SelectTrigger id="fulfillmentTimeUnit" className="w-full">
+                    <SelectValue placeholder="Select a fulfillment time unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hours">hours</SelectItem>
+                    <SelectItem value="days">days</SelectItem>
+                    <SelectItem value="weeks">weeks</SelectItem>
+                    <SelectItem value="months">months</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="reviewer">Reviewer</Label>
-              <Select defaultValue={item.reviewer}>
-                <SelectTrigger id="reviewer" className="w-full">
-                  <SelectValue placeholder="Select a reviewer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                  <SelectItem value="Jamik Tashpulatov">Jamik Tashpulatov</SelectItem>
-                  <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="paymentTime">Payment time</Label>
+                <Input name="paymentTime" defaultValue={item.paymentTime ?? 0} />
+              </div>
+              <div className="flex flex-col gap-3">
+                <Label htmlFor="paymentTimeUnit">Unit</Label>
+                <Select name="paymentTimeUnit" defaultValue={item.paymentTimeUnit ?? "months"}>
+                  <SelectTrigger name="paymentTimeUnit" className="w-full">
+                    <SelectValue placeholder="Select a payment time unit" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="hours">hours</SelectItem>
+                    <SelectItem value="days">days</SelectItem>
+                    <SelectItem value="weeks">weeks</SelectItem>
+                    <SelectItem value="months">months</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </form>
         </div>
         <DrawerFooter>
-          <Button>Submit</Button>
+          <Button type="submit" form="form-id">
+            Submit
+          </Button>
           <DrawerClose asChild>
             <Button variant="outline">Done</Button>
           </DrawerClose>
