@@ -1,23 +1,25 @@
 import { getQuotations } from "@/app/dashboard/quotations/actions"
 import { QuotationsDataTable } from "@/app/dashboard/quotations/QuotationsDataTable"
+import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
 
-export default async function Page() {
-  // TODO: URL paraméterek kezelése (pl. pagination, filters)
+interface Props {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
+
+export default async function Page({ searchParams }: Props) {
+  const { page = 1, limit = DEFAULT_PAGINATION_LIMIT, sort, order } = await searchParams
+
   const { data: quotations_details, count } = await getQuotations({
     select: "*",
     order: {
-      field: "createdAt",
-      ascending: false
+      field: sort ? (typeof sort === "string" ? sort : sort[0]) : "createdAt",
+      ascending: order ? (typeof order === "string" ? order === "asc" : order[0] === "asc") : false
     },
     range: {
-      from: 0,
-      to: 9
+      from: (Number(page) - 1) * Number(limit),
+      to: Number(page) * Number(limit) - 1
     }
   })
 
-  return (
-    <div className="py-4 md:py-6">
-      <QuotationsDataTable data={quotations_details} />
-    </div>
-  )
+  return <QuotationsDataTable data={quotations_details} rowCount={count ?? 0} />
 }

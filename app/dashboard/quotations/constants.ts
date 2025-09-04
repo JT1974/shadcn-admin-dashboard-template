@@ -7,3 +7,5 @@ export const CREATE_QUOTATION_ERROR = "The quotation could not be created"
 export const UPDATE_QUOTATION_ERROR = "The quotation could not be updated"
 export const DELETE_QUOTATION_ERROR = "The quotation could not be deleted"
 export const DELETE_QUOTATIONS_ERROR = "The quotations could not be deleted"
+
+export const QUOTATION_REFERENCE = ["Ivett", "existing partner", "website", "google"]

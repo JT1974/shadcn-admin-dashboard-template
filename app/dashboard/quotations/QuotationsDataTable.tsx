@@ -2,20 +2,6 @@
 
 import * as React from "react"
 import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type UniqueIdentifier
-} from "@dnd-kit/core"
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers"
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
-import {
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
@@ -23,10 +9,11 @@ import {
   IconChevronsRight,
   IconCircleCheckFilled,
   IconDotsVertical,
-  IconGripVertical,
   IconLayoutColumns,
   IconLoader,
-  IconPlus
+  IconPlus,
+  IconSortAscending,
+  IconSortDescending
 } from "@tabler/icons-react"
 import {
   ColumnDef,
@@ -38,7 +25,6 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  Row,
   SortingState,
   useReactTable,
   VisibilityState
@@ -65,281 +51,154 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import Link from "next/link"
 import { formatDate } from "@/lib/utils"
-import z from "zod"
-import { quotationFormSchema } from "@/app/dashboard/quotations/schemas"
-import { Textarea } from "@/components/ui/textarea"
+import QuotationForm from "@/app/dashboard/quotations/QuotationForm"
+import { useRouter, useSearchParams } from "next/navigation"
+import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
 
-// Create a separate component for the drag handle
-function DragHandle({ id }: { id: number }) {
-  const { attributes, listeners } = useSortable({
-    id
-  })
-
-  return (
-    <Button
-      {...attributes}
-      {...listeners}
-      variant="ghost"
-      size="icon"
-      className="text-muted-foreground size-7 hover:bg-transparent"
-    >
-      <IconGripVertical className="text-muted-foreground size-3" />
-      <span className="sr-only">Drag to reorder</span>
-    </Button>
-  )
-}
-
-const columns: ColumnDef<IQuotation>[] = [
-  {
-    id: "drag",
-    header: () => null,
-    cell: ({ row }) => <DragHandle id={row.original.id} />
-  },
-  {
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex items-center justify-center">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false
-  },
-  {
-    accessorKey: "number",
-    header: "Number",
-    cell: ({ row }) => {
-      return (
-        <TableCellViewer
-          item={{
-            ...row.original,
-            customerId: row.original.customer?.id ?? null,
-            taskIds: row.original.tasks?.map((task) => task.id ?? 0) ?? [],
-            paymentTime: String(row.original.paymentTime ?? 0),
-            fulfillmentTime: String(row.original.fulfillmentTime ?? 0)
-          }}
-        />
-      )
-    },
-    enableHiding: false
-  },
-  {
-    accessorKey: "description",
-    header: "Description",
-    cell: ({ row }) => <p className="max-w-160 text-wrap">{row.original.description}</p>,
-    enableHiding: true
-  },
-  {
-    accessorKey: "reference",
-    header: "Reference",
-    cell: ({ row }) => row.original.reference,
-    enableHiding: true
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="text-muted-foreground px-1.5">
-        {row.original.status === "accepted" ? (
-          <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-        ) : (
-          <IconLoader />
-        )}
-        {row.original.status}
-      </Badge>
-    )
-  },
-  {
-    accessorKey: "tasks",
-    header: "Tasks",
-    cell: ({ row }) =>
-      row.original.tasks?.map((task) => (
-        <Link key={task.id} href={`/dashboard/tasks/${task.id}`}>
-          <Badge variant="outline" className="text-muted-foreground px-1.5">
-            {/* taskStatus: "open" | "inprogress" | "closed" | "suspended" | "continuous" | "cancelled" */}
-            {task.status === "closed" ? (
-              <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-            ) : task.status === "suspended" ? (
-              <IconCircleCheckFilled className="fill-orange-500 dark:fill-orange-400" />
-            ) : task.status === "cancelled" ? (
-              <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400" />
-            ) : (
-              <IconLoader />
-            )}
-            {task.id}
-          </Badge>
-        </Link>
-      ))
-  },
-  {
-    accessorKey: "createdAt",
-    header: "Created",
-    cell: ({ row }) => <p>{formatDate(row.original.createdAt)}</p>,
-    enableHiding: true
-  },
-  // {
-  //   accessorKey: "target",
-  //   header: () => <div className="w-full text-right">Target</div>,
-  //   cell: ({ row }) => (
-  //     <form
-  //       onSubmit={(e) => {
-  //         e.preventDefault()
-  //         toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-  //           loading: `Saving ${row.original.header}`,
-  //           success: "Done",
-  //           error: "Error"
-  //         })
-  //       }}
-  //     >
-  //       <Label htmlFor={`${row.original.id}-target`} className="sr-only">
-  //         Target
-  //       </Label>
-  //       <Input
-  //         className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-  //         defaultValue={row.original.target}
-  //         id={`${row.original.id}-target`}
-  //       />
-  //     </form>
-  //   )
-  // },
-  // {
-  //   accessorKey: "limit",
-  //   header: () => <div className="w-full text-right">Limit</div>,
-  //   cell: ({ row }) => (
-  //     <form
-  //       onSubmit={(e) => {
-  //         e.preventDefault()
-  //         toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-  //           loading: `Saving ${row.original.header}`,
-  //           success: "Done",
-  //           error: "Error"
-  //         })
-  //       }}
-  //     >
-  //       <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-  //         Limit
-  //       </Label>
-  //       <Input
-  //         className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-  //         defaultValue={row.original.limit}
-  //         id={`${row.original.id}-limit`}
-  //       />
-  //     </form>
-  //   )
-  // },
-  // {
-  //   accessorKey: "reviewer",
-  //   header: "Reviewer",
-  //   cell: ({ row }) => {
-  //     const isAssigned = row.original.reviewer !== "Assign reviewer"
-
-  //     if (isAssigned) {
-  //       return row.original.reviewer
-  //     }
-
-  //     return (
-  //       <>
-  //         <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
-  //           Reviewer
-  //         </Label>
-  //         <Select>
-  //           <SelectTrigger
-  //             className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
-  //             size="sm"
-  //             id={`${row.original.id}-reviewer`}
-  //           >
-  //             <SelectValue placeholder="Assign reviewer" />
-  //           </SelectTrigger>
-  //           <SelectContent align="end">
-  //             <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-  //             <SelectItem value="Jamik Tashpulatov">Jamik Tashpulatov</SelectItem>
-  //           </SelectContent>
-  //         </Select>
-  //       </>
-  //     )
-  //   }
-  // },
-  {
-    id: "actions",
-    cell: () => (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="data-[state=open]:bg-muted text-muted-foreground flex size-8" size="icon">
-            <IconDotsVertical />
-            <span className="sr-only">Open menu</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    )
-  }
-]
-
-function DraggableRow({ row }: { row: Row<IQuotation> }) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
-    id: row.original.id
-  })
-
-  return (
-    <TableRow
-      data-state={row.getIsSelected() && "selected"}
-      data-dragging={isDragging}
-      ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition: transition
-      }}
-    >
-      {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-      ))}
-    </TableRow>
-  )
-}
-
-export function QuotationsDataTable({ data: initialData }: { data: IQuotation[] }) {
-  const [data, setData] = React.useState(() => initialData)
+export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; rowCount: number }) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
+
+  //const navigation = useNavigation()
+  const params = useSearchParams()
+  const page = params.get("page")
+  const limit = params.get("limit")
   const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 10
+    pageIndex: page ? Number(page) - 1 : 0,
+    pageSize: limit ? Number(limit) : DEFAULT_PAGINATION_LIMIT
   })
-  const sortableId = React.useId()
-  const sensors = useSensors(useSensor(MouseSensor, {}), useSensor(TouchSensor, {}), useSensor(KeyboardSensor, {}))
+  const router = useRouter()
 
-  const dataIds = React.useMemo<UniqueIdentifier[]>(() => data?.map(({ id }) => id) || [], [data])
+  const columns = React.useMemo<ColumnDef<IQuotation>[]>(
+    () => [
+      {
+        id: "select",
+        header: ({ table }) => (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+              aria-label="Select all"
+            />
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Select row"
+            />
+          </div>
+        ),
+        enableSorting: false,
+        enableHiding: false
+      },
+      {
+        accessorKey: "number",
+        header: "Number",
+        cell: ({ row }) => {
+          return <TableCellViewer item={row.original} />
+        },
+        enableHiding: false
+      },
+      {
+        accessorKey: "description",
+        header: "Description",
+        cell: ({ row }) => <p className="max-w-160 text-wrap">{row.original.description}</p>,
+        enableHiding: true,
+        enableSorting: false
+      },
+      {
+        accessorKey: "reference",
+        header: "Reference",
+        cell: ({ row }) => row.original.reference,
+        enableHiding: true
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <Badge variant="outline" className="text-muted-foreground px-1.5">
+            {row.original.status === "accepted" ? (
+              <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+            ) : (
+              <IconLoader />
+            )}
+            {row.original.status}
+          </Badge>
+        )
+      },
+      {
+        accessorKey: "tasks",
+        header: "Tasks",
+        cell: ({ row }) =>
+          row.original.tasks?.map((task) => (
+            <Link key={task.id} href={`/dashboard/tasks/${task.id}`}>
+              <Badge variant="outline" className="text-muted-foreground px-1.5">
+                {/* taskStatus: "open" | "inprogress" | "closed" | "suspended" | "continuous" | "cancelled" */}
+                {task.status === "closed" ? (
+                  <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+                ) : task.status === "suspended" ? (
+                  <IconCircleCheckFilled className="fill-orange-500 dark:fill-orange-400" />
+                ) : task.status === "cancelled" ? (
+                  <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400" />
+                ) : (
+                  <IconLoader />
+                )}
+                {task.id}
+              </Badge>
+            </Link>
+          )),
+        enableSorting: false
+      },
+      {
+        accessorKey: "createdAt",
+        header: "Created",
+        cell: ({ row }) => <p>{formatDate(row.original.createdAt)}</p>,
+        enableHiding: true,
+        sortingFn: "datetime"
+      },
+      {
+        id: "actions",
+        cell: () => (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+                size="icon"
+              >
+                <IconDotsVertical />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-32">
+              <DropdownMenuItem>Edit</DropdownMenuItem>
+              <DropdownMenuItem>Make a copy</DropdownMenuItem>
+              <DropdownMenuItem>Favorite</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ),
+        enableSorting: false
+      }
+    ],
+    [data]
+  )
 
+  // TODO: sorting
   const table = useReactTable({
+    manualPagination: true,
+    rowCount,
     data,
     columns,
     state: {
@@ -351,6 +210,7 @@ export function QuotationsDataTable({ data: initialData }: { data: IQuotation[] 
     },
     getRowId: (row) => row.id.toString(),
     enableRowSelection: true,
+    enableSorting: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -364,126 +224,123 @@ export function QuotationsDataTable({ data: initialData }: { data: IQuotation[] 
     getFacetedUniqueValues: getFacetedUniqueValues()
   })
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event
-    if (active && over && active.id !== over.id) {
-      setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id)
-        const newIndex = dataIds.indexOf(over.id)
-        return arrayMove(data, oldIndex, newIndex)
-      })
+  React.useEffect(() => {
+    let url = "/dashboard/quotations?"
+
+    const newPage = (pagination.pageIndex + 1) * pagination.pageSize <= rowCount ? pagination.pageIndex + 1 : 1
+
+    url += `page=${newPage}&limit=${pagination.pageSize}`
+
+    if (sorting.length) {
+      url += `&sort=${sorting[0].id}&order=${sorting[0].desc ? "desc" : "asc"}`
     }
-  }
+
+    if (url) {
+      router.push(url)
+    }
+  }, [pagination.pageSize, pagination.pageIndex, sorting, rowCount, router])
 
   return (
-    <Tabs defaultValue="outline" className="w-full flex-col justify-start gap-6">
-      <div className="flex items-center justify-between px-4 lg:px-6">
-        <Label htmlFor="view-selector" className="sr-only">
-          View
-        </Label>
-        <Select defaultValue="outline">
-          <SelectTrigger className="flex w-fit @4xl/main:hidden" size="sm" id="view-selector">
-            <SelectValue placeholder="Select a view" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="outline">Outline</SelectItem>
-            <SelectItem value="past-performance">Past Performance</SelectItem>
-            <SelectItem value="key-personnel">Key Personnel</SelectItem>
-            <SelectItem value="focus-documents">Focus Documents</SelectItem>
-          </SelectContent>
-        </Select>
-        <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
-          <TabsTrigger value="past-performance">
-            Past Performance <Badge variant="secondary">3</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="key-personnel">
-            Key Personnel <Badge variant="secondary">2</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
-        </TabsList>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <IconLayoutColumns />
-                <span className="hidden lg:inline">Customize Columns</span>
-                <span className="lg:hidden">Columns</span>
-                <IconChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {table
-                .getAllColumns()
-                .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  )
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <IconPlus />
-            <span className="hidden lg:inline">Add Section</span>
-          </Button>
-        </div>
+    <div className="flex w-full flex-col items-start gap-6">
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm">
+              <IconLayoutColumns />
+              <span className="hidden lg:inline">Customize Columns</span>
+              <span className="lg:hidden">Columns</span>
+              <IconChevronDown />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56">
+            {table
+              .getAllColumns()
+              .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide())
+              .map((column) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                )
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button variant="outline" size="sm">
+          <IconPlus />
+          <span className="hidden lg:inline">Add Section</span>
+        </Button>
       </div>
-      <TabsContent value="outline" className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
+      <div className="relative flex w-full flex-col gap-4 overflow-auto">
+        {/* table */}
         <div className="overflow-hidden rounded-lg border">
-          <DndContext
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragEnd={handleDragEnd}
-            sensors={sensors}
-            id={sortableId}
-          >
-            <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
-                        </TableHead>
-                      )
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody className="**:data-[slot=table-cell]:first:w-8">
-                {table.getRowModel().rows?.length ? (
-                  <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
-                    {table.getRowModel().rows.map((row) => (
-                      <DraggableRow key={row.id} row={row} />
-                    ))}
-                  </SortableContext>
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </DndContext>
+          <Table>
+            <TableHeader className="bg-muted sticky top-0 z-10">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder ? null : (
+                          <div
+                            className={header.column.getCanSort() ? "cursor-pointer select-none" : ""}
+                            onClick={header.column.getToggleSortingHandler()}
+                            title={
+                              header.column.getCanSort()
+                                ? header.column.getNextSortingOrder() === "asc"
+                                  ? "Sort ascending"
+                                  : header.column.getNextSortingOrder() === "desc"
+                                    ? "Sort descending"
+                                    : "Clear sort"
+                                : undefined
+                            }
+                          >
+                            {flexRender(header.column.columnDef.header, header.getContext())}
+                            {{
+                              asc: <IconSortAscending className="ml-2 inline-block size-4 align-middle" />,
+                              desc: <IconSortDescending className="ml-2 inline-block size-4 align-middle" />
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </div>
+                        )}
+                      </TableHead>
+                    )
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody className="**:data-[slot=table-cell]:first:w-8">
+              {table.getRowModel().rows?.length ? (
+                <>
+                  {table.getRowModel().rows.map((row) => (
+                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </>
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-24 text-center">
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
-        <div className="flex items-center justify-between px-4">
+        {/* table footer */}
+        <div className="flex items-center justify-between">
+          {/* number of rows selected */}
           <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
             {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
             selected.
           </div>
+          {/* pagination */}
           <div className="flex w-full items-center gap-8 lg:w-fit">
             <div className="hidden items-center gap-2 lg:flex">
               <Label htmlFor="rows-per-page" className="text-sm font-medium">
@@ -553,28 +410,12 @@ export function QuotationsDataTable({ data: initialData }: { data: IQuotation[] 
             </div>
           </div>
         </div>
-      </TabsContent>
-      <TabsContent value="past-performance" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-      <TabsContent value="key-personnel" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-      <TabsContent value="focus-documents" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-    </Tabs>
+      </div>
+    </div>
   )
 }
 
-function TableCellViewer({
-  item
-}: {
-  item: z.infer<typeof quotationFormSchema> & {
-    customer: IPartner | null
-    tasks: ITask[] | null
-  }
-}) {
+function TableCellViewer({ item }: { item: IQuotation }) {
   const isMobile = useIsMobile()
 
   return (
@@ -586,107 +427,18 @@ function TableCellViewer({
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.number}</DrawerTitle>
-          <DrawerDescription className="capitalize">
-            {item.customer?.name} {item.customer?.companyForm}
-          </DrawerDescription>
+          <DrawerTitle>{item.number ?? "New quotation"}</DrawerTitle>
+          {item.customer && (
+            <DrawerDescription className="capitalize">
+              {item.customer?.name} {item.customer?.companyForm}
+            </DrawerDescription>
+          )}
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          <form
-            id="form-id"
-            method="post"
-            className="flex flex-col gap-4"
-            onSubmit={(e) => {
-              e.preventDefault()
-              const data = new FormData(e.target as HTMLFormElement)
-
-              let dataObj = {}
-
-              for (const pair of data.entries()) {
-                dataObj = { ...dataObj, [pair[0]]: pair[1] }
-              }
-
-              console.log(dataObj)
-            }}
-          >
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="description">Description</Label>
-              <Textarea name="description" defaultValue={item.description ?? ""} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="reference">Reference</Label>
-                <Select name="reference" defaultValue={item.reference ?? "existing partner"}>
-                  <SelectTrigger id="reference" className="w-full">
-                    <SelectValue placeholder="Select a reference" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Ivett">Ivett</SelectItem>
-                    <SelectItem value="existing partner">existing partner</SelectItem>
-                    <SelectItem value="website">website</SelectItem>
-                    <SelectItem value="google">google</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="status">Status</Label>
-                <Select name="status" defaultValue={item.status ?? "created"}>
-                  <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="created">created</SelectItem>
-                    <SelectItem value="accepted">accepted</SelectItem>
-                    <SelectItem value="rejected">rejected</SelectItem>
-                    <SelectItem value="deleted">deleted</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="fulfillmentTime">Fulfillment time</Label>
-                <Input name="fulfillmentTime" defaultValue={item.fulfillmentTime ?? 0} />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="fulfillmentTimeUnit">Unit</Label>
-                <Select name="fulfillmentTimeUnit" defaultValue={item.fulfillmentTimeUnit ?? "months"}>
-                  <SelectTrigger id="fulfillmentTimeUnit" className="w-full">
-                    <SelectValue placeholder="Select a fulfillment time unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hours">hours</SelectItem>
-                    <SelectItem value="days">days</SelectItem>
-                    <SelectItem value="weeks">weeks</SelectItem>
-                    <SelectItem value="months">months</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="paymentTime">Payment time</Label>
-                <Input name="paymentTime" defaultValue={item.paymentTime ?? 0} />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="paymentTimeUnit">Unit</Label>
-                <Select name="paymentTimeUnit" defaultValue={item.paymentTimeUnit ?? "months"}>
-                  <SelectTrigger name="paymentTimeUnit" className="w-full">
-                    <SelectValue placeholder="Select a payment time unit" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="hours">hours</SelectItem>
-                    <SelectItem value="days">days</SelectItem>
-                    <SelectItem value="weeks">weeks</SelectItem>
-                    <SelectItem value="months">months</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </form>
+          <QuotationForm id="quotation-form" item={item} />
         </div>
         <DrawerFooter>
-          <Button type="submit" form="form-id">
+          <Button type="submit" form="quotation-form">
             Submit
           </Button>
           <DrawerClose asChild>

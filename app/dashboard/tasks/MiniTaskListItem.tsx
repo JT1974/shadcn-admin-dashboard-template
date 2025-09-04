@@ -1,7 +1,7 @@
 import TaskStatus from "@/app/dashboard/tasks/TaskStatus"
 import Currency from "@/components/currency"
 import { Badge } from "@/components/ui/badge"
-import { classNames, formatDate, getFullName } from "@/lib/utils"
+import { cn, formatDate, getFullName } from "@/lib/utils"
 import { BanknoteIcon, ClockIcon, UserIcon } from "lucide-react"
 import type { ReactNode } from "react"
 
@@ -18,7 +18,7 @@ function MiniTaskListItem({ task, className = "", buttons, buttonPosition = "rig
   const { currency, deadline, description, status, owner, unitPrice } = task
 
   return (
-    <div className={classNames("flex w-full justify-between gap-x-3 py-1", className)}>
+    <div className={cn("flex w-full justify-between gap-x-3 py-1", className)}>
       <div className="flex flex-col pb-1.5">
         <p className="text-sm/6 font-medium">{description ?? "No description"}</p>
 

@@ -1,5 +1,5 @@
 import MiniTaskListItem from "@/app/dashboard/tasks/MiniTaskListItem"
-import { classNames } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { PencilIcon } from "lucide-react"
 import Link from "next/link"
 
@@ -12,7 +12,7 @@ function MiniTaskList({ tasks, className = "" }: Props) {
   return (
     <ul
       role="list"
-      className={classNames("relative my-2 space-y-2 divide-y divide-slate-200 dark:divide-slate-800", className)}
+      className={cn("relative my-2 space-y-2 divide-y divide-slate-200 dark:divide-slate-800", className)}
     >
       {tasks?.map((task) => (
         <MiniTaskListItem

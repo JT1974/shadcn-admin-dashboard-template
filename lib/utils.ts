@@ -9,6 +9,7 @@ import {
   defaultCountries,
   parseCountry
 } from "react-international-phone"
+import { DATE_FORMAT, DATETIME_FORMAT, DEFAULT_TIMEZONE } from "@/constants/general"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -19,15 +20,11 @@ export function capitalize(text: string) {
   return [firstLetter.toUpperCase(), ...remainingLetters].join("")
 }
 
-export function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ")
-}
-
 // Formatters
 export const formatDate = (date: Date | string): string => {
   const safeDate = date instanceof Date ? date : new Date(date)
 
-  const dateOnly = formatInTimeZone(safeDate, "Europe/Budapest", "yyyy-MM-dd", {
+  const dateOnly = formatInTimeZone(safeDate, DEFAULT_TIMEZONE, DATE_FORMAT, {
     locale: hu
   })
 
@@ -37,7 +34,7 @@ export const formatDate = (date: Date | string): string => {
 export const formatDateToDateTime = (date: Date | string): string => {
   const safeDate = date instanceof Date ? date : new Date(date)
 
-  const dateOnly = formatInTimeZone(safeDate, "Europe/Budapest", "yyyy-MM-dd HH:mm", {
+  const dateOnly = formatInTimeZone(safeDate, DEFAULT_TIMEZONE, DATETIME_FORMAT, {
     locale: hu
   })
 
