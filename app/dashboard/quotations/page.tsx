@@ -1,5 +1,5 @@
-import { getQuotations } from "@/app/dashboard/quotations/actions"
-import { QuotationsDataTable } from "@/app/dashboard/quotations/QuotationsDataTable"
+import { getQuotations } from "@/app/dashboard/quotations/lib/actions"
+import { QuotationsDataTable } from "@/app/dashboard/quotations/quotation-data-table"
 import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
 
 interface Props {

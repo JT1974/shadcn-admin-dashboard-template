@@ -8,11 +8,11 @@ interface IByIdsParams {
 
 interface IQueryParams {
   select: string
-  order: {
+  order?: {
     field: string
     ascending: boolean
   }
-  range: {
+  range?: {
     from: number
     to: number
   }

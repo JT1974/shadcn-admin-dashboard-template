@@ -5,12 +5,7 @@ const Constants = {
   public: {
     Enums: {
       companyForm: ["kft", "bt", "zrt", "nyrt", "ev"],
-      completionCertificateStatus: [
-        "created",
-        "accepted",
-        "rejected",
-        "deleted"
-      ],
+      completionCertificateStatus: ["created", "accepted", "rejected", "deleted"],
       contractStatus: ["open", "closed", "cancelled"],
       currency: ["HUF", "EUR", "USD"],
       invoiceStatus: ["issued", "paid", "deleted"],
@@ -19,28 +14,10 @@ const Constants = {
       partnerType: ["new", "existing"],
       projectOwnershipType: ["normal", "subcontracting"],
       projectStatus: ["inprogress", "closed", "suspended", "cancelled"],
+      quotationReference: ["Ivett", "existing partner", "website", "google"],
       quotationStatus: ["created", "accepted", "rejected", "deleted"],
-      taskCategory: [
-        "ex",
-        "fp",
-        "exfp",
-        "edu",
-        "cons",
-        "rev",
-        "revex",
-        "lpex",
-        "ohs",
-        "env",
-        "lp"
-      ],
-      taskStatus: [
-        "open",
-        "inprogress",
-        "closed",
-        "suspended",
-        "continuous",
-        "cancelled"
-      ],
+      taskCategory: ["ex", "fp", "exfp", "edu", "cons", "rev", "revex", "lpex", "ohs", "env", "lp"],
+      taskStatus: ["open", "inprogress", "closed", "suspended", "continuous", "cancelled"],
       workingTimeUnit: ["hours", "days", "weeks", "months"]
     }
   }

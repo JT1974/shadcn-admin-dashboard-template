@@ -1,12 +1,6 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 // NOTE: frissíteni supabase változás esetén!!!
 interface Database {
@@ -518,7 +512,7 @@ interface Database {
           number: string | null
           paymentTime: number
           paymentTimeUnit: Database["public"]["Enums"]["workingTimeUnit"]
-          reference: string | null
+          reference: Database["public"]["Enums"]["quotationReference"]
           status: Database["public"]["Enums"]["quotationStatus"]
           tasks: number[] | null
         }
@@ -534,7 +528,7 @@ interface Database {
           number?: string | null
           paymentTime?: number
           paymentTimeUnit?: Database["public"]["Enums"]["workingTimeUnit"]
-          reference?: string | null
+          reference?: Database["public"]["Enums"]["quotationReference"]
           status?: Database["public"]["Enums"]["quotationStatus"]
           tasks?: number[] | null
         }
@@ -550,7 +544,7 @@ interface Database {
           number?: string | null
           paymentTime?: number
           paymentTimeUnit?: Database["public"]["Enums"]["workingTimeUnit"]
-          reference?: string | null
+          reference?: Database["public"]["Enums"]["quotationReference"]
           status?: Database["public"]["Enums"]["quotationStatus"]
           tasks?: number[] | null
         }
@@ -593,9 +587,7 @@ interface Database {
           companyAddress?: string | null
           companyBankAccountNumber?: string | null
           companyCurrencies?: Database["public"]["Enums"]["currency"][] | null
-          companyDefaultCurrency?:
-            | Database["public"]["Enums"]["currency"]
-            | null
+          companyDefaultCurrency?: Database["public"]["Enums"]["currency"] | null
           companyEducítionRegistrationNumber?: string | null
           companyEmail?: string | null
           companyEUVAT?: string | null
@@ -612,9 +604,7 @@ interface Database {
           companyAddress?: string | null
           companyBankAccountNumber?: string | null
           companyCurrencies?: Database["public"]["Enums"]["currency"][] | null
-          companyDefaultCurrency?:
-            | Database["public"]["Enums"]["currency"]
-            | null
+          companyDefaultCurrency?: Database["public"]["Enums"]["currency"] | null
           companyEducítionRegistrationNumber?: string | null
           companyEmail?: string | null
           companyEUVAT?: string | null
@@ -746,27 +736,19 @@ interface Database {
       quotations_details: {
         Row: {
           createdAt: string
-          customer: Partial<
-            Database["public"]["Tables"]["partners"]["Row"]
-          > | null
+          customer: Partial<Database["public"]["Tables"]["partners"]["Row"]> | null
           description: string | null
           fulfillmentTime: number | null
-          fulfillmentTimeUnit:
-            | Database["public"]["Enums"]["workingTimeUnit"]
-            | null
+          fulfillmentTimeUnit: Database["public"]["Enums"]["workingTimeUnit"] | null
           id: number
           lastModifiedAt: string | null
-          lastModifiedBy: Partial<
-            Database["public"]["Tables"]["profiles"]["Row"]
-          > | null
+          lastModifiedBy: Partial<Database["public"]["Tables"]["profiles"]["Row"]> | null
           number: string | null
           paymentTime: number | null
           paymentTimeUnit: Database["public"]["Enums"]["workingTimeUnit"] | null
-          reference: string | null
+          reference: Database["public"]["Enums"]["quotationReference"]
           status: Database["public"]["Enums"]["quotationStatus"] | null
-          tasks:
-            | Partial<Database["public"]["Views"]["tasks_details"]["Row"]>[]
-            | null
+          tasks: Partial<Database["public"]["Views"]["tasks_details"]["Row"]>[] | null
         }
         Relationships: []
       }
@@ -780,21 +762,15 @@ interface Database {
           description: string | null
           id: number
           lastModifiedAt: string | null
-          lastModifiedBy: Partial<
-            Database["public"]["Tables"]["profiles"]["Row"]
-          > | null
+          lastModifiedBy: Partial<Database["public"]["Tables"]["profiles"]["Row"]> | null
           owner: Partial<Database["public"]["Tables"]["profiles"]["Row"]> | null
           remainingTime: number | null
           status: Database["public"]["Enums"]["taskStatus"] | null
-          subcontractor: Partial<
-            Database["public"]["Tables"]["partners"]["Row"]
-          > | null
+          subcontractor: Partial<Database["public"]["Tables"]["partners"]["Row"]> | null
           timeAmount: number | null
           timeUnit: Database["public"]["Enums"]["workingTimeUnit"] | null
           unitPrice: number | null
-          workplace: Partial<
-            Database["public"]["Tables"]["workplaces"]["Row"]
-          > | null
+          workplace: Partial<Database["public"]["Tables"]["workplaces"]["Row"]> | null
         }
         Relationships: []
       }
@@ -804,11 +780,7 @@ interface Database {
     }
     Enums: {
       companyForm: "kft" | "bt" | "zrt" | "nyrt" | "ev"
-      completionCertificateStatus:
-        | "created"
-        | "accepted"
-        | "rejected"
-        | "deleted"
+      completionCertificateStatus: "created" | "accepted" | "rejected" | "deleted"
       contractStatus: "open" | "closed" | "cancelled"
       currency: "HUF" | "EUR" | "USD"
       invoiceStatus: "issued" | "paid" | "deleted"
@@ -817,26 +789,10 @@ interface Database {
       partnerType: "new" | "existing"
       projectOwnershipType: "normal" | "subcontracting"
       projectStatus: "inprogress" | "closed" | "suspended" | "cancelled"
+      quotationReference: "Ivett" | "existing partner" | "website" | "google"
       quotationStatus: "created" | "accepted" | "rejected" | "deleted"
-      taskCategory:
-        | "ex"
-        | "fp"
-        | "exfp"
-        | "edu"
-        | "cons"
-        | "rev"
-        | "revex"
-        | "lpex"
-        | "ohs"
-        | "env"
-        | "lp"
-      taskStatus:
-        | "open"
-        | "inprogress"
-        | "closed"
-        | "suspended"
-        | "continuous"
-        | "cancelled"
+      taskCategory: "ex" | "fp" | "exfp" | "edu" | "cons" | "rev" | "revex" | "lpex" | "ohs" | "env" | "lp"
+      taskStatus: "open" | "inprogress" | "closed" | "suspended" | "continuous" | "cancelled"
       workingTimeUnit: "hours" | "days" | "weeks" | "months"
     }
     CompositeTypes: {
@@ -868,10 +824,8 @@ type Tables<
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -879,9 +833,7 @@ type Tables<
     : never
 
 type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -904,9 +856,7 @@ type TablesInsert<
     : never
 
 type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -929,9 +879,7 @@ type TablesUpdate<
     : never
 
 type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+  DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
@@ -968,8 +916,7 @@ type SupabaseEnumKeys = keyof Database["public"]["Enums"]
 type SupabaseEnums = Database["public"]["Enums"]
 
 // Table and View types
-type CompletionCertificatesTable =
-  Database["public"]["Tables"]["completionCertificates"]
+type CompletionCertificatesTable = Database["public"]["Tables"]["completionCertificates"]
 type ContactsTable = Database["public"]["Tables"]["contacts"]
 type ContractsTable = Database["public"]["Tables"]["contracts"]
 type InvoicesTable = Database["public"]["Tables"]["invoices"]

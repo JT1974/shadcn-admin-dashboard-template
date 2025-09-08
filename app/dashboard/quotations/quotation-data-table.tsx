@@ -8,12 +8,14 @@ import {
   IconChevronsLeft,
   IconChevronsRight,
   IconCircleCheckFilled,
+  IconCircleXFilled,
   IconDotsVertical,
   IconLayoutColumns,
   IconLoader,
   IconPlus,
   IconSortAscending,
-  IconSortDescending
+  IconSortDescending,
+  IconTrashFilled
 } from "@tabler/icons-react"
 import {
   ColumnDef,
@@ -56,9 +58,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Link from "next/link"
 import { formatDate } from "@/lib/utils"
-import QuotationForm from "@/app/dashboard/quotations/QuotationForm"
+import QuotationForm from "@/app/dashboard/quotations/quotation-form"
 import { useRouter, useSearchParams } from "next/navigation"
 import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
+import { updateQuotation } from "@/app/dashboard/quotations/lib/actions"
+import BackButton from "@/components/back-button"
+import RefreshButton from "@/components/refresh-button"
 
 export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; rowCount: number }) {
   const [rowSelection, setRowSelection] = React.useState({})
@@ -97,9 +102,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
               aria-label="Select row"
             />
           </div>
-        ),
-        enableSorting: false,
-        enableHiding: false
+        )
       },
       {
         accessorKey: "number",
@@ -113,57 +116,59 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
         accessorKey: "description",
         header: "Description",
         cell: ({ row }) => <p className="max-w-160 text-wrap">{row.original.description}</p>,
-        enableHiding: true,
         enableSorting: false
       },
       {
         accessorKey: "reference",
         header: "Reference",
-        cell: ({ row }) => row.original.reference,
-        enableHiding: true
+        cell: ({ row }) => row.original.reference
       },
       {
         accessorKey: "status",
         header: "Status",
         cell: ({ row }) => (
           <Badge variant="outline" className="text-muted-foreground px-1.5">
-            {row.original.status === "accepted" ? (
+            {row.original.status === "accepted" && (
               <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-            ) : (
-              <IconLoader />
             )}
+            {row.original.status === "rejected" && <IconCircleXFilled className="fill-red-500 dark:fill-red-400" />}
+            {row.original.status === "deleted" && <IconTrashFilled className="fill-gray-500 dark:fill-gray-400" />}
+            {row.original.status === "created" && <IconLoader color="royalblue" />}
             {row.original.status}
           </Badge>
-        )
+        ),
+        enableHiding: false
       },
       {
         accessorKey: "tasks",
         header: "Tasks",
-        cell: ({ row }) =>
-          row.original.tasks?.map((task) => (
-            <Link key={task.id} href={`/dashboard/tasks/${task.id}`}>
-              <Badge variant="outline" className="text-muted-foreground px-1.5">
-                {/* taskStatus: "open" | "inprogress" | "closed" | "suspended" | "continuous" | "cancelled" */}
-                {task.status === "closed" ? (
-                  <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-                ) : task.status === "suspended" ? (
-                  <IconCircleCheckFilled className="fill-orange-500 dark:fill-orange-400" />
-                ) : task.status === "cancelled" ? (
-                  <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400" />
-                ) : (
-                  <IconLoader />
-                )}
-                {task.id}
-              </Badge>
-            </Link>
-          )),
+        cell: ({ row }) => (
+          <div className="flex max-w-40 flex-wrap items-center gap-1">
+            {row.original.tasks?.map((task) => (
+              <Link key={task.id} href={`/dashboard/tasks/${task.id}`}>
+                <Badge variant="outline" className="text-muted-foreground px-1.5">
+                  {/* taskStatus: "open" | "inprogress" | "closed" | "suspended" | "continuous" | "cancelled" */}
+                  {task.status === "closed" ? (
+                    <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+                  ) : task.status === "suspended" ? (
+                    <IconCircleCheckFilled className="fill-orange-500 dark:fill-orange-400" />
+                  ) : task.status === "cancelled" ? (
+                    <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400" />
+                  ) : (
+                    <IconLoader />
+                  )}
+                  {task.id}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        ),
         enableSorting: false
       },
       {
         accessorKey: "createdAt",
         header: "Created",
         cell: ({ row }) => <p>{formatDate(row.original.createdAt)}</p>,
-        enableHiding: true,
         sortingFn: "datetime"
       },
       {
@@ -188,14 +193,12 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
               <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        ),
-        enableSorting: false
+        )
       }
     ],
     [data]
   )
 
-  // TODO: sorting
   const table = useReactTable({
     manualPagination: true,
     rowCount,
@@ -227,7 +230,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
   React.useEffect(() => {
     let url = "/dashboard/quotations?"
 
-    const newPage = (pagination.pageIndex + 1) * pagination.pageSize <= rowCount ? pagination.pageIndex + 1 : 1
+    const newPage = pagination.pageIndex * pagination.pageSize < rowCount ? pagination.pageIndex + 1 : 1
 
     url += `page=${newPage}&limit=${pagination.pageSize}`
 
@@ -242,7 +245,9 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
 
   return (
     <div className="flex w-full flex-col items-start gap-6">
+      {/* page top buttons */}
       <div className="flex items-center gap-2">
+        {/* show/hide columns */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
@@ -270,13 +275,16 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
               })}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="outline" size="sm">
+        {/* add new item */}
+        <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/quotations/create")}>
           <IconPlus />
-          <span className="hidden lg:inline">Add Section</span>
+          <span className="hidden lg:inline">Add Quotation</span>
         </Button>
       </div>
+
+      {/* table */}
       <div className="relative flex w-full flex-col gap-4 overflow-auto">
-        {/* table */}
+        {/* table body */}
         <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader className="bg-muted sticky top-0 z-10">
@@ -342,6 +350,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
           </div>
           {/* pagination */}
           <div className="flex w-full items-center gap-8 lg:w-fit">
+            {/* limit */}
             <div className="hidden items-center gap-2 lg:flex">
               <Label htmlFor="rows-per-page" className="text-sm font-medium">
                 Rows per page
@@ -364,9 +373,11 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
                 </SelectContent>
               </Select>
             </div>
+            {/* actual page */}
             <div className="flex w-fit items-center justify-center text-sm font-medium">
               Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
             </div>
+            {/* pagination buttons */}
             <div className="ml-auto flex items-center gap-2 lg:ml-0">
               <Button
                 variant="outline"
@@ -434,16 +445,22 @@ function TableCellViewer({ item }: { item: IQuotation }) {
             </DrawerDescription>
           )}
         </DrawerHeader>
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          <QuotationForm id="quotation-form" item={item} />
-        </div>
-        <DrawerFooter>
-          <Button type="submit" form="quotation-form">
-            Submit
-          </Button>
-          <DrawerClose asChild>
-            <Button variant="outline">Done</Button>
-          </DrawerClose>
+        <DrawerFooter className="grow overflow-y-auto px-4 pb-4">
+          <QuotationForm
+            prefill={item}
+            onSave={updateQuotation}
+            actionButtons={
+              <>
+                <DrawerClose asChild>
+                  <RefreshButton type="submit">Submit</RefreshButton>
+                </DrawerClose>
+                <DrawerClose asChild>
+                  <BackButton />
+                </DrawerClose>
+              </>
+            }
+            className="grow"
+          />
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

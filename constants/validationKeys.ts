@@ -7,6 +7,7 @@ export const VALIDATION_KEYS = {
   atLeastOneNumber: "At least one number",
   atLeastOneSpecialCharacter: "At least one special character",
   invalidEmail: "Invalid email",
+  invalidNumber: "Invalid number",
   passwordMismatch: "Password mismatch",
   invalidPhoneNumber: "Invalid phone number"
 }

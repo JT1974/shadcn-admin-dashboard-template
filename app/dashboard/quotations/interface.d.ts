@@ -5,29 +5,25 @@ type IQuotation = QuotationsDetailsView["Row"] & {
 }
 
 interface QuotationFormErrorFields {
-  number?: string
   description?: string
-  reference?: string
-  status?: string
   paymentTime?: string
-  paymentTimeUnit?: string
   fulfillmentTime?: string
-  fulfillmentTimeUnit?: string
   taskIds?: string
   customerId?: string
 }
 
 interface IQuotationForm {
-  number: string | null
+  number?: string | null
   description: string | null
-  reference: string | null
-  status: SupabaseEnums["quotationStatus"] | null
-  paymentTime: string | null
-  paymentTimeUnit: SupabaseEnums["workingTimeUnit"] | null
-  fulfillmentTime: string | null
-  fulfillmentTimeUnit: SupabaseEnums["workingTimeUnit"] | null
+  reference: SupabaseEnums["quotationReference"]
+  status: SupabaseEnums["quotationStatus"]
+  paymentTime: number
+  paymentTimeUnit: SupabaseEnums["workingTimeUnit"]
+  fulfillmentTime: number
+  fulfillmentTimeUnit: SupabaseEnums["workingTimeUnit"]
   taskIds: number[]
   customerId: number | null
+  customer?: IPartner | null
 }
 
 type IUpsertQuotationBody = QuotationsTable["Insert"]
