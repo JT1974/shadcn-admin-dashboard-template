@@ -1,7 +1,7 @@
 "use client"
 
-import { createQuotation, updateQuotation } from "@/app/dashboard/quotations/lib/actions"
-import QuotationForm from "@/app/dashboard/quotations/quotation-form"
+import { createQuotation, updateQuotation } from "@/app/dashboard/quotations/_lib/actions"
+import QuotationForm from "@/app/dashboard/quotations/_components/quotation-form"
 import BackButton from "@/components/back-button"
 import { Button } from "@/components/ui/button"
 

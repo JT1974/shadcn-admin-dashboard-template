@@ -9,7 +9,7 @@ import {
   QUOTATIONS,
   QUOTATIONS_DETAILS,
   UPDATE_QUOTATION_ERROR
-} from "@/app/dashboard/quotations/lib/constants"
+} from "@/app/dashboard/quotations/_lib/constants"
 import { createClient } from "@/lib/supabase/server"
 
 export const getQuotations = async ({ select, order, range, filters }: IQueryParams) => {

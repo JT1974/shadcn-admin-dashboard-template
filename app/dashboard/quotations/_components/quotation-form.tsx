@@ -1,6 +1,6 @@
 "use client"
 
-import useQuotationForm from "@/app/dashboard/quotations/hooks/useQuotationForm"
+import useQuotationForm from "@/app/dashboard/quotations/_hooks/useQuotationForm"
 import InputWithLabel from "@/components/input-with-label"
 import SelectWithLabel from "@/components/select-with-label"
 import TextareaWithLabel from "@/components/textarea-with-label"

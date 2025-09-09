@@ -1,5 +1,5 @@
-import { getQuotationById } from "@/app/dashboard/quotations/lib/actions"
-import UpsertQuotation from "@/app/dashboard/quotations/upsert-quotation"
+import { getQuotationById } from "@/app/dashboard/quotations/_lib/actions"
+import UpsertQuotation from "@/app/dashboard/quotations/_components/upsert-quotation"
 
 interface Props {
   params: Promise<{ id: string }>

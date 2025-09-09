@@ -1,4 +1,4 @@
-import { getPartners } from "@/app/dashboard/partners/lib/actions"
+import { getPartners } from "@/app/dashboard/partners/_lib/actions"
 
 interface Props {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>

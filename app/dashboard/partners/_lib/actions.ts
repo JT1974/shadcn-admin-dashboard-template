@@ -1,6 +1,6 @@
 "use server"
 
-import { GET_PARTNERS_ERROR, PARTNERS } from "@/app/dashboard/partners/lib/constants"
+import { GET_PARTNERS_ERROR, PARTNERS } from "@/app/dashboard/partners/_lib/constants"
 import { createClient } from "@/lib/supabase/server"
 
 export const getPartners = async ({ select, order, range, filters }: IQueryParams) => {

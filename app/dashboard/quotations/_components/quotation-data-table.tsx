@@ -58,10 +58,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import Link from "next/link"
 import { formatDate } from "@/lib/utils"
-import QuotationForm from "@/app/dashboard/quotations/quotation-form"
+import QuotationForm from "@/app/dashboard/quotations/_components/quotation-form"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
-import { updateQuotation } from "@/app/dashboard/quotations/lib/actions"
+import { updateQuotation } from "@/app/dashboard/quotations/_lib/actions"
 
 export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; rowCount: number }) {
   const [rowSelection, setRowSelection] = React.useState({})
