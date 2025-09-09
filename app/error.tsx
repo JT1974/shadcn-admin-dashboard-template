@@ -1,19 +1,26 @@
 "use client"
 
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { IconArrowBack } from "@tabler/icons-react"
 import Link from "next/link"
 
-function Error() {
+export default function Error() {
   return (
-    <div className="flex size-full flex-col items-center justify-center gap-4">
-      <h2 className="text-4xl font-semibold text-red-600 sm:text-6xl dark:text-red-500">Error</h2>
-      <h3 className="text-center text-2xl sm:text-3xl">Something unexpected happened. Please try again.</h3>
-      <Link href="/dashboard" className="flex gap-2 hover:text-blue-700 dark:hover:text-blue-400">
-        <IconArrowBack />
-        Back to home
-      </Link>
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <Card className="gap-2">
+          <CardHeader>
+            <CardTitle className="text-3xl font-semibold">Sorry, something went wrong.</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-muted-foreground text-lg sm:text-xl">An unspecified error occurred.</p>
+            <Link href="/dashboard" className="flex gap-2 hover:text-blue-700 dark:hover:text-blue-400">
+              <IconArrowBack />
+              Back to home
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
-
-export default Error
