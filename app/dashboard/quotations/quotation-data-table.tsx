@@ -62,8 +62,6 @@ import QuotationForm from "@/app/dashboard/quotations/quotation-form"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
 import { updateQuotation } from "@/app/dashboard/quotations/lib/actions"
-import BackButton from "@/components/back-button"
-import RefreshButton from "@/components/refresh-button"
 
 export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; rowCount: number }) {
   const [rowSelection, setRowSelection] = React.useState({})
@@ -71,6 +69,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
 
   const params = useSearchParams()
+  const currentSearchStr = params.toString()
   const page = params.get("page")
   const limit = params.get("limit")
   const sort = params.getAll("sort")
@@ -232,8 +231,6 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
   })
 
   React.useEffect(() => {
-    const currentSearchStr = params.toString()
-
     let searchStr = ""
     const newPage = pagination.pageIndex * pagination.pageSize < rowCount ? pagination.pageIndex + 1 : 1
     searchStr += `page=${newPage}&limit=${pagination.pageSize}`
@@ -242,7 +239,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
     if (searchStr !== currentSearchStr) {
       router.push(`${pathname}?${searchStr}`)
     }
-  }, [pagination, sorting, rowCount, router, pathname, params])
+  }, [pagination, sorting, rowCount, router, pathname, currentSearchStr])
 
   return (
     <div className="flex w-full flex-col items-start gap-6">
@@ -428,6 +425,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
 }
 
 function TableCellViewer({ item }: { item: IQuotation }) {
+  const router = useRouter()
   const isMobile = useIsMobile()
 
   return (
@@ -449,14 +447,17 @@ function TableCellViewer({ item }: { item: IQuotation }) {
         <DrawerFooter className="grow overflow-y-auto px-4 pb-4">
           <QuotationForm
             prefill={item}
-            onSave={updateQuotation}
+            onSave={(quotation) => {
+              updateQuotation(quotation)
+              router.refresh()
+            }}
             actionButtons={
               <>
                 <DrawerClose asChild>
-                  <RefreshButton type="submit">Submit</RefreshButton>
+                  <Button type="submit">Submit</Button>
                 </DrawerClose>
                 <DrawerClose asChild>
-                  <BackButton />
+                  <Button variant="outline">Done</Button>
                 </DrawerClose>
               </>
             }
