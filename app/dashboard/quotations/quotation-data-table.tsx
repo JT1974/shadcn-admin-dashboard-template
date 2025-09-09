@@ -59,7 +59,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import Link from "next/link"
 import { formatDate } from "@/lib/utils"
 import QuotationForm from "@/app/dashboard/quotations/quotation-form"
-import { useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
 import { updateQuotation } from "@/app/dashboard/quotations/lib/actions"
 import BackButton from "@/components/back-button"
@@ -69,17 +69,21 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = React.useState<SortingState>([])
 
-  //const navigation = useNavigation()
   const params = useSearchParams()
   const page = params.get("page")
   const limit = params.get("limit")
+  const sort = params.getAll("sort")
+  const order = params.getAll("order")
   const [pagination, setPagination] = React.useState({
-    pageIndex: page ? Number(page) - 1 : 0,
-    pageSize: limit ? Number(limit) : DEFAULT_PAGINATION_LIMIT
+    pageIndex: Number(page) >= 1 ? Number(page) - 1 : 0, // cannot be less, than 1
+    pageSize: Number(limit) || DEFAULT_PAGINATION_LIMIT // cannot be less, than 1
   })
+  const [sorting, setSorting] = React.useState<SortingState>(
+    sort?.map((s, i) => ({ id: s, desc: order.at(i) !== "asc" })) ?? []
+  )
   const router = useRouter()
+  const pathname = usePathname()
 
   const columns = React.useMemo<ColumnDef<IQuotation>[]>(
     () => [
@@ -228,20 +232,17 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
   })
 
   React.useEffect(() => {
-    let url = "/dashboard/quotations?"
+    const currentSearchStr = params.toString()
 
+    let searchStr = ""
     const newPage = pagination.pageIndex * pagination.pageSize < rowCount ? pagination.pageIndex + 1 : 1
+    searchStr += `page=${newPage}&limit=${pagination.pageSize}`
+    sorting?.forEach(({ id, desc }) => (searchStr += `&sort=${id}&order=${desc ? "desc" : "asc"}`))
 
-    url += `page=${newPage}&limit=${pagination.pageSize}`
-
-    if (sorting.length) {
-      url += `&sort=${sorting[0].id}&order=${sorting[0].desc ? "desc" : "asc"}`
+    if (searchStr !== currentSearchStr) {
+      router.push(`${pathname}?${searchStr}`)
     }
-
-    if (url) {
-      router.push(url)
-    }
-  }, [pagination.pageSize, pagination.pageIndex, sorting, rowCount, router])
+  }, [pagination, sorting, rowCount, router, pathname, params])
 
   return (
     <div className="flex w-full flex-col items-start gap-6">
