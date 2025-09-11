@@ -1,16 +1,21 @@
-import { mapQuotationFormToQuotationBody, mapQuotationToQuotationForm } from "@/app/dashboard/quotations/_lib/mappers"
+import { createQuotation, updateQuotation } from "@/app/dashboard/quotations/_lib/actions"
+import {
+  mapQuotationFormToQuotationBody,
+  mapQuotationDetailsToQuotationForm
+} from "@/app/dashboard/quotations/_lib/mappers"
 import { quotationFormSchema } from "@/app/dashboard/quotations/_lib/schemas"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { toast } from "sonner"
 
 interface Props {
-  prefill?: IQuotation
-  onSave: (body: IUpsertQuotationBody) => void
+  prefill?: IQuotationDetails
+  onSave?: () => void
 }
 
 function useQuotationForm({ prefill, onSave }: Props) {
+  const [isLoading, setIsLoading] = useState(false)
   const {
     control,
     formState: { errors, isDirty },
@@ -20,22 +25,36 @@ function useQuotationForm({ prefill, onSave }: Props) {
     reset
   } = useForm<IQuotationForm>({
     resolver: zodResolver(quotationFormSchema),
-    defaultValues: mapQuotationToQuotationForm(prefill)
+    defaultValues: mapQuotationDetailsToQuotationForm(prefill)
   })
 
-  const onSubmit: SubmitHandler<IQuotationForm> = (form) => {
+  const onSubmit: SubmitHandler<IQuotationForm> = async (form) => {
     if (!isDirty) return
 
-    onSave({
-      ...mapQuotationFormToQuotationBody(form),
-      id: prefill?.id
-    })
+    setIsLoading(true)
+
+    await (prefill
+      ? updateQuotation({
+          ...mapQuotationFormToQuotationBody(form),
+          id: prefill.id
+        })
+      : createQuotation({
+          ...mapQuotationFormToQuotationBody(form)
+        }))
+
+    onSave?.()
+
+    if (!prefill) {
+      reset()
+    }
 
     toast.success("Quotation saved successfully!")
+
+    setIsLoading(false)
   }
 
   useEffect(() => {
-    if (prefill) reset(mapQuotationToQuotationForm(prefill))
+    if (prefill) reset(mapQuotationDetailsToQuotationForm(prefill))
   }, [prefill, reset])
 
   return {
@@ -43,7 +62,8 @@ function useQuotationForm({ prefill, onSave }: Props) {
     register,
     setValue,
     errors,
-    onSubmit: handleSubmit(onSubmit)
+    onSubmit: handleSubmit(onSubmit),
+    isLoading
   }
 }
 

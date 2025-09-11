@@ -15,5 +15,5 @@ export const quotationFormSchema = object({
 
   // dto ids - temporary fields
   taskIds: number().array(),
-  customerId: number({ error: VALIDATION_KEYS.required }).nullable()
+  customerId: number({ error: VALIDATION_KEYS.required })
 })

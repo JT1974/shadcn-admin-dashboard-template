@@ -13,8 +13,8 @@ import { Controller } from "react-hook-form"
 
 interface Props {
   customers?: IPartner[]
-  prefill?: IQuotation
-  onSave: (body: IUpsertQuotationBody) => void
+  prefill?: IQuotationDetails
+  onSave?: () => void
   actionButtons: React.ReactNode
   disabled?: boolean
   className?: string
@@ -22,7 +22,7 @@ interface Props {
 
 function QuotationForm({ customers = [], prefill, onSave, actionButtons, disabled = false, className }: Props) {
   const router = useRouter()
-  const { control, register, setValue, errors, onSubmit } = useQuotationForm({
+  const { control, register, setValue, errors, onSubmit, isLoading } = useQuotationForm({
     prefill,
     onSave
   })
@@ -30,8 +30,8 @@ function QuotationForm({ customers = [], prefill, onSave, actionButtons, disable
   return (
     <form className={cn("flex flex-col justify-between gap-4", className)} onSubmit={onSubmit}>
       <fieldset className="flex w-full flex-col gap-4" disabled={disabled}>
-        {customers?.length > 0 && (
-          <div className="flex items-end gap-2">
+        {customers.length > 0 && (
+          <div className="flex items-start gap-2">
             <Controller
               control={control}
               name="customer"
@@ -44,10 +44,12 @@ function QuotationForm({ customers = [], prefill, onSave, actionButtons, disable
                     placeholder="Select a customer"
                     onSelect={({ target: { value } }) => {
                       const customer = customers.find((customer) => customer.name === value)
-                      onChange(customer)
-                      setValue("customerId", customer?.id ?? null)
+                      if (customer) {
+                        onChange(customer)
+                        setValue("customerId", customer.id)
+                      }
                     }}
-                    options={customers.map(({ name }) => name ?? "Unknown")}
+                    options={customers?.map(({ name }) => name ?? "Unknown")}
                     className="flex grow flex-col gap-3"
                     error={errors.customerId?.message}
                   />
@@ -61,12 +63,14 @@ function QuotationForm({ customers = [], prefill, onSave, actionButtons, disable
                 e.preventDefault()
                 router.push("/dashboard/partners/create?partnerType=customer&redirectTo=/dashboard/quotations/create")
               }}
+              className="mt-6.5"
             >
               <IconPlus />
               <span className="hidden lg:inline">Add Customer</span>
             </Button>
           </div>
         )}
+
         <TextareaWithLabel
           label="Description"
           {...register("description")}
@@ -161,7 +165,9 @@ function QuotationForm({ customers = [], prefill, onSave, actionButtons, disable
         />
       </fieldset>
 
-      <div className="flex flex-col gap-4">{actionButtons}</div>
+      <fieldset className="flex flex-col gap-4" disabled={disabled || isLoading}>
+        {actionButtons}
+      </fieldset>
     </form>
   )
 }

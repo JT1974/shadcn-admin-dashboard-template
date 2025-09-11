@@ -61,9 +61,8 @@ import { formatDate } from "@/lib/utils"
 import QuotationForm from "@/app/dashboard/quotations/_components/quotation-form"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
-import { updateQuotation } from "@/app/dashboard/quotations/_lib/actions"
 
-export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; rowCount: number }) {
+export function QuotationsDataTable({ data, rowCount }: { data: IQuotationDetails[]; rowCount: number }) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -84,7 +83,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
   const router = useRouter()
   const pathname = usePathname()
 
-  const columns = React.useMemo<ColumnDef<IQuotation>[]>(
+  const columns = React.useMemo<ColumnDef<IQuotationDetails>[]>(
     () => [
       {
         id: "select",
@@ -424,7 +423,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotation[]; ro
   )
 }
 
-function TableCellViewer({ item }: { item: IQuotation }) {
+function TableCellViewer({ item }: { item: IQuotationDetails }) {
   const router = useRouter()
   const isMobile = useIsMobile()
 
@@ -447,10 +446,7 @@ function TableCellViewer({ item }: { item: IQuotation }) {
         <DrawerFooter className="grow overflow-y-auto px-4 pb-4">
           <QuotationForm
             prefill={item}
-            onSave={(quotation) => {
-              updateQuotation(quotation)
-              router.refresh()
-            }}
+            onSave={router.refresh}
             actionButtons={
               <>
                 <DrawerClose asChild>

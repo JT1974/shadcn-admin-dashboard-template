@@ -44,7 +44,7 @@ export const getQuotations = async ({ select, order, range, filters }: IQueryPar
 
   if (error) throw new Error(GET_QUOTATIONS_ERROR)
 
-  return { data: data as unknown as IQuotation[], count }
+  return { data: data as unknown as IQuotationDetails[], count }
 }
 
 export const getQuotationById = async ({ id }: IByIdParams) => {
@@ -54,17 +54,17 @@ export const getQuotationById = async ({ id }: IByIdParams) => {
 
   if (error) throw new Error(GET_QUOTATION_ERROR)
 
-  return data as IQuotation
+  return data as IQuotationDetails
 }
 
 export const createQuotation = async (quotation: IUpsertQuotationBody) => {
   const supabase = await createClient()
 
-  const { data, error } = await supabase.from(QUOTATIONS).insert(quotation).select().single()
+  const { data, error } = await supabase.from(QUOTATIONS).insert(quotation)
 
   if (error) throw new Error(CREATE_QUOTATION_ERROR)
 
-  return data
+  return
 }
 
 export const updateQuotation = async (quotation: IUpsertQuotationBody) => {
@@ -74,11 +74,11 @@ export const updateQuotation = async (quotation: IUpsertQuotationBody) => {
 
   if (!id) throw new Error(UPDATE_QUOTATION_ERROR)
 
-  const { data, error } = await supabase.from(QUOTATIONS).update(updatedQuotation).eq("id", id).select().single()
+  const { data, error } = await supabase.from(QUOTATIONS).update(updatedQuotation).eq("id", id)
 
   if (error) throw new Error(UPDATE_QUOTATION_ERROR)
 
-  return data
+  return
 }
 
 export const deleteQuotationById = async ({ id }: IByIdParams) => {

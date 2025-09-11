@@ -1,8 +1,6 @@
-type IQuotation = QuotationsDetailsView["Row"] & {
-  customer: IPartner | null
-  lastModifiedBy: IUser | null
-  tasks: ITask[] | null
-}
+type IQuotation = QuotationsTable["Row"]
+
+type IQuotationDetails = QuotationsDetailsView["Row"]
 
 interface QuotationFormErrorFields {
   description?: string
@@ -22,8 +20,8 @@ interface IQuotationForm {
   fulfillmentTime: number
   fulfillmentTimeUnit: SupabaseEnums["workingTimeUnit"]
   taskIds: number[]
-  customerId: number | null
-  customer?: IPartner | null
+  customerId: number
+  customer?: IPartner
 }
 
 type IUpsertQuotationBody = QuotationsTable["Insert"]
