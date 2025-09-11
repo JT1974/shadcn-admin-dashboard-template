@@ -322,34 +322,34 @@ interface Database {
       }
       partners: {
         Row: {
-          companyForm: Database["public"]["Enums"]["companyForm"] | null
+          companyForm: Database["public"]["Enums"]["companyForm"]
           createdAt: string
           id: number
           lastModifiedAt: string | null
           lastModifiedBy: string | null
           name: string | null
-          relation: Database["public"]["Enums"]["partnerRelation"] | null
-          type: Database["public"]["Enums"]["partnerType"] | null
+          relation: Database["public"]["Enums"]["partnerRelation"]
+          type: Database["public"]["Enums"]["partnerType"]
         }
         Insert: {
-          companyForm?: Database["public"]["Enums"]["companyForm"] | null
+          companyForm?: Database["public"]["Enums"]["companyForm"]
           createdAt?: string
           id?: number
           lastModifiedAt?: string | null
           lastModifiedBy?: string | null
           name?: string | null
-          relation?: Database["public"]["Enums"]["partnerRelation"] | null
-          type?: Database["public"]["Enums"]["partnerType"] | null
+          relation?: Database["public"]["Enums"]["partnerRelation"]
+          type?: Database["public"]["Enums"]["partnerType"]
         }
         Update: {
-          companyForm?: Database["public"]["Enums"]["companyForm"] | null
+          companyForm?: Database["public"]["Enums"]["companyForm"]
           createdAt?: string
           id?: number
           lastModifiedAt?: string | null
           lastModifiedBy?: string | null
           name?: string | null
-          relation?: Database["public"]["Enums"]["partnerRelation"] | null
-          type?: Database["public"]["Enums"]["partnerType"] | null
+          relation?: Database["public"]["Enums"]["partnerRelation"]
+          type?: Database["public"]["Enums"]["partnerType"]
         }
         Relationships: []
       }
@@ -502,7 +502,7 @@ interface Database {
       quotations: {
         Row: {
           createdAt: string
-          customer: number | null
+          customer: number
           description: string | null
           fulfillmentTime: number
           fulfillmentTimeUnit: Database["public"]["Enums"]["workingTimeUnit"]
@@ -514,11 +514,11 @@ interface Database {
           paymentTimeUnit: Database["public"]["Enums"]["workingTimeUnit"]
           reference: Database["public"]["Enums"]["quotationReference"]
           status: Database["public"]["Enums"]["quotationStatus"]
-          tasks: number[] | null
+          tasks: number[]
         }
         Insert: {
           createdAt?: string
-          customer?: number | null
+          customer?: number
           description?: string | null
           fulfillmentTime?: number
           fulfillmentTimeUnit?: Database["public"]["Enums"]["workingTimeUnit"]
@@ -530,11 +530,11 @@ interface Database {
           paymentTimeUnit?: Database["public"]["Enums"]["workingTimeUnit"]
           reference?: Database["public"]["Enums"]["quotationReference"]
           status?: Database["public"]["Enums"]["quotationStatus"]
-          tasks?: number[] | null
+          tasks?: number[]
         }
         Update: {
           createdAt?: string
-          customer?: number | null
+          customer?: number
           description?: string | null
           fulfillmentTime?: number
           fulfillmentTimeUnit?: Database["public"]["Enums"]["workingTimeUnit"]
@@ -546,7 +546,7 @@ interface Database {
           paymentTimeUnit?: Database["public"]["Enums"]["workingTimeUnit"]
           reference?: Database["public"]["Enums"]["quotationReference"]
           status?: Database["public"]["Enums"]["quotationStatus"]
-          tasks?: number[] | null
+          tasks?: number[]
         }
         Relationships: [
           {
@@ -569,8 +569,8 @@ interface Database {
         Row: {
           companyAddress: string | null
           companyBankAccountNumber: string | null
-          companyCurrencies: Database["public"]["Enums"]["currency"][] | null
-          companyDefaultCurrency: Database["public"]["Enums"]["currency"] | null
+          companyCurrencies: Database["public"]["Enums"]["currency"][]
+          companyDefaultCurrency: Database["public"]["Enums"]["currency"]
           companyEducítionRegistrationNumber: string | null
           companyEmail: string | null
           companyEUVAT: string | null
@@ -586,8 +586,8 @@ interface Database {
         Insert: {
           companyAddress?: string | null
           companyBankAccountNumber?: string | null
-          companyCurrencies?: Database["public"]["Enums"]["currency"][] | null
-          companyDefaultCurrency?: Database["public"]["Enums"]["currency"] | null
+          companyCurrencies?: Database["public"]["Enums"]["currency"][]
+          companyDefaultCurrency?: Database["public"]["Enums"]["currency"]
           companyEducítionRegistrationNumber?: string | null
           companyEmail?: string | null
           companyEUVAT?: string | null
@@ -603,8 +603,8 @@ interface Database {
         Update: {
           companyAddress?: string | null
           companyBankAccountNumber?: string | null
-          companyCurrencies?: Database["public"]["Enums"]["currency"][] | null
-          companyDefaultCurrency?: Database["public"]["Enums"]["currency"] | null
+          companyCurrencies?: Database["public"]["Enums"]["currency"][]
+          companyDefaultCurrency?: Database["public"]["Enums"]["currency"]
           companyEducítionRegistrationNumber?: string | null
           companyEmail?: string | null
           companyEUVAT?: string | null
@@ -621,7 +621,7 @@ interface Database {
       }
       tasks: {
         Row: {
-          category: Database["public"]["Enums"]["taskCategory"] | null
+          category: Database["public"]["Enums"]["taskCategory"]
           comments: string | null
           createdAt: string
           currency: Database["public"]["Enums"]["currency"]
@@ -635,12 +635,12 @@ interface Database {
           status: Database["public"]["Enums"]["taskStatus"]
           subcontractor: number | null
           timeAmount: number
-          timeUnit: Database["public"]["Enums"]["workingTimeUnit"] | null
+          timeUnit: Database["public"]["Enums"]["workingTimeUnit"]
           unitPrice: number
           workplace: number | null
         }
         Insert: {
-          category?: Database["public"]["Enums"]["taskCategory"] | null
+          category?: Database["public"]["Enums"]["taskCategory"]
           comments?: string | null
           createdAt?: string
           currency?: Database["public"]["Enums"]["currency"]
@@ -654,12 +654,12 @@ interface Database {
           status?: Database["public"]["Enums"]["taskStatus"]
           subcontractor?: number | null
           timeAmount?: number
-          timeUnit?: Database["public"]["Enums"]["workingTimeUnit"] | null
+          timeUnit?: Database["public"]["Enums"]["workingTimeUnit"]
           unitPrice?: number
           workplace?: number | null
         }
         Update: {
-          category?: Database["public"]["Enums"]["taskCategory"] | null
+          category?: Database["public"]["Enums"]["taskCategory"]
           comments?: string | null
           createdAt?: string
           currency?: Database["public"]["Enums"]["currency"]
@@ -673,7 +673,7 @@ interface Database {
           status?: Database["public"]["Enums"]["taskStatus"]
           subcontractor?: number | null
           timeAmount?: number
-          timeUnit?: Database["public"]["Enums"]["workingTimeUnit"] | null
+          timeUnit?: Database["public"]["Enums"]["workingTimeUnit"]
           unitPrice?: number
           workplace?: number | null
         }
@@ -703,7 +703,7 @@ interface Database {
       }
       workplaces: {
         Row: {
-          companyForm: Database["public"]["Enums"]["companyForm"] | null
+          companyForm: Database["public"]["Enums"]["companyForm"]
           createdAt: string
           id: number
           lastModifiedAt: string | null
@@ -712,7 +712,7 @@ interface Database {
           site: string | null
         }
         Insert: {
-          companyForm?: Database["public"]["Enums"]["companyForm"] | null
+          companyForm?: Database["public"]["Enums"]["companyForm"]
           createdAt?: string
           id?: number
           lastModifiedAt?: string | null
@@ -721,7 +721,7 @@ interface Database {
           site?: string | null
         }
         Update: {
-          companyForm?: Database["public"]["Enums"]["companyForm"] | null
+          companyForm?: Database["public"]["Enums"]["companyForm"]
           createdAt?: string
           id?: number
           lastModifiedAt?: string | null
@@ -736,25 +736,25 @@ interface Database {
       quotations_details: {
         Row: {
           createdAt: string
-          customer: Partial<Database["public"]["Tables"]["partners"]["Row"]> | null
+          customer: Partial<Database["public"]["Tables"]["partners"]["Row"]>
           description: string | null
           fulfillmentTime: number | null
-          fulfillmentTimeUnit: Database["public"]["Enums"]["workingTimeUnit"] | null
+          fulfillmentTimeUnit: Database["public"]["Enums"]["workingTimeUnit"]
           id: number
           lastModifiedAt: string | null
           lastModifiedBy: Partial<Database["public"]["Tables"]["profiles"]["Row"]> | null
           number: string | null
           paymentTime: number | null
-          paymentTimeUnit: Database["public"]["Enums"]["workingTimeUnit"] | null
+          paymentTimeUnit: Database["public"]["Enums"]["workingTimeUnit"]
           reference: Database["public"]["Enums"]["quotationReference"]
-          status: Database["public"]["Enums"]["quotationStatus"] | null
-          tasks: Partial<Database["public"]["Views"]["tasks_details"]["Row"]>[] | null
+          status: Database["public"]["Enums"]["quotationStatus"]
+          tasks: Partial<Database["public"]["Views"]["tasks_details"]["Row"]>[]
         }
         Relationships: []
       }
       tasks_details: {
         Row: {
-          category: Database["public"]["Enums"]["taskCategory"] | null
+          category: Database["public"]["Enums"]["taskCategory"]
           comments: string | null
           createdAt: string
           currency: Database["public"]["Enums"]["currency"]
@@ -765,10 +765,10 @@ interface Database {
           lastModifiedBy: Partial<Database["public"]["Tables"]["profiles"]["Row"]> | null
           owner: Partial<Database["public"]["Tables"]["profiles"]["Row"]> | null
           remainingTime: number | null
-          status: Database["public"]["Enums"]["taskStatus"] | null
+          status: Database["public"]["Enums"]["taskStatus"]
           subcontractor: Partial<Database["public"]["Tables"]["partners"]["Row"]> | null
           timeAmount: number | null
-          timeUnit: Database["public"]["Enums"]["workingTimeUnit"] | null
+          timeUnit: Database["public"]["Enums"]["workingTimeUnit"]
           unitPrice: number | null
           workplace: Partial<Database["public"]["Tables"]["workplaces"]["Row"]> | null
         }
