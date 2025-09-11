@@ -12,8 +12,8 @@ import { useRouter } from "next/navigation"
 import { Controller } from "react-hook-form"
 
 interface Props {
-  customers?: IPartner[]
-  prefill?: IQuotationDetails
+  customers?: Partner[]
+  prefill?: QuotationDetails
   onSave?: () => void
   actionButtons: React.ReactNode
   disabled?: boolean

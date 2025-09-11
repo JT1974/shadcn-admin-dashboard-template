@@ -915,18 +915,41 @@ type CompositeTypes<
 type SupabaseEnumKeys = keyof Database["public"]["Enums"]
 type SupabaseEnums = Database["public"]["Enums"]
 
-// Table and View types
-type CompletionCertificatesTable = Database["public"]["Tables"]["completionCertificates"]
-type ContactsTable = Database["public"]["Tables"]["contacts"]
-type ContractsTable = Database["public"]["Tables"]["contracts"]
-type InvoicesTable = Database["public"]["Tables"]["invoices"]
-type OredersTable = Database["public"]["Tables"]["orders"]
-type PartnersTable = Database["public"]["Tables"]["partners"]
-type ProfilesTable = Database["public"]["Tables"]["profiles"]
-type ProjectsTable = Database["public"]["Tables"]["projects"]
-type QuotationsTable = Database["public"]["Tables"]["quotations"]
-type QuotationsDetailsView = Database["public"]["Views"]["quotations_details"]
-type SettingsTable = Database["public"]["Tables"]["settings"]
-type TasksTable = Database["public"]["Tables"]["tasks"]
-type TasksDetailsView = Database["public"]["Views"]["tasks_details"]
-type WorkplacesTable = Database["public"]["Tables"]["workplaces"]
+// Completion Certificate types
+type CompletionCertificate = Database["public"]["Tables"]["completionCertificates"]["Row"]
+
+// Contact types
+type Contact = Database["public"]["Tables"]["contacts"]["Row"]
+
+// Contract types
+type Contract = Database["public"]["Tables"]["contracts"]["Row"]
+
+// Invoice types
+type Invoice = Database["public"]["Tables"]["invoices"]["Row"]
+
+// Order types
+type Order = Database["public"]["Tables"]["orders"]["Row"]
+
+// Partner types
+type Partner = Database["public"]["Tables"]["partners"]["Row"]
+
+// Profile types
+type Profile = Database["public"]["Tables"]["profiles"]["Row"]
+
+// Project types
+type Project = Database["public"]["Tables"]["projects"]["Row"]
+
+// Quotation types
+type Quotation = Database["public"]["Tables"]["quotations"]["Row"]
+type QuotationDetails = Database["public"]["Views"]["quotations_details"]["Row"]
+type UpsertQuotationBody = Database["public"]["Tables"]["quotations"]["Insert"]
+
+// Setting types
+type Setting = Database["public"]["Tables"]["settings"]["Row"]
+
+// Task types
+type Task = Database["public"]["Tables"]["tasks"]["Row"]
+type TaskDetails = Database["public"]["Views"]["tasks_details"]["Row"]
+
+// Workplace types
+type Workplace = Database["public"]["Tables"]["workplaces"]["Row"]

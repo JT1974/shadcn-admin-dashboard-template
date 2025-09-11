@@ -17,3 +17,5 @@ export const quotationFormSchema = object({
   taskIds: number().array(),
   customerId: number({ error: VALIDATION_KEYS.required })
 })
+
+export type QuotationForm = z.infer<typeof quotationFormSchema> & { customer?: Partner }

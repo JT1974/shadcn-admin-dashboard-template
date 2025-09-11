@@ -37,5 +37,5 @@ export const getPartners = async ({ select, order, range, filters }: IQueryParam
 
   if (error) throw new Error(GET_PARTNERS_ERROR)
 
-  return { data: data as unknown as IPartner[], count }
+  return { data: data as unknown as Partner[], count }
 }

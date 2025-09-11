@@ -1,9 +1,9 @@
 interface IByIdParams {
-  id: string | number
+  id: number
 }
 
 interface IByIdsParams {
-  ids: string[]
+  ids: number[]
 }
 
 interface IQueryParams {
@@ -27,17 +27,3 @@ interface IGenericPaginationResponse<T> {
   data: T[] | null
   count: number | null
 }
-
-interface IFilter {
-  id: string
-  key: string
-  name: string
-  type: string
-  param: string
-  value?: string | boolean
-  values?: (string | number)[]
-}
-
-type IFilterOption = Omit<IFilter, "id">
-
-type IOrderByFields = Record<string, string | null>

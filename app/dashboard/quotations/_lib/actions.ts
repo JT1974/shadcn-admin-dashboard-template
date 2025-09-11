@@ -44,9 +44,10 @@ export const getQuotations = async ({ select, order, range, filters }: IQueryPar
 
   if (error) throw new Error(GET_QUOTATIONS_ERROR)
 
-  return { data: data as unknown as IQuotationDetails[], count }
+  return { data: data as unknown as QuotationDetails[], count }
 }
 
+// if (error) throw error.message --> error.message-ként kell renderelni kliens oldalon
 export const getQuotationById = async ({ id }: IByIdParams) => {
   const supabase = await createClient()
 
@@ -54,27 +55,27 @@ export const getQuotationById = async ({ id }: IByIdParams) => {
 
   if (error) throw new Error(GET_QUOTATION_ERROR)
 
-  return data as IQuotationDetails
+  return data as QuotationDetails
 }
 
-export const createQuotation = async (quotation: IUpsertQuotationBody) => {
+export const createQuotation = async (quotation: UpsertQuotationBody) => {
   const supabase = await createClient()
 
-  const { data, error } = await supabase.from(QUOTATIONS).insert(quotation)
+  const { error } = await supabase.from(QUOTATIONS).insert(quotation)
 
   if (error) throw new Error(CREATE_QUOTATION_ERROR)
 
   return
 }
 
-export const updateQuotation = async (quotation: IUpsertQuotationBody) => {
+export const updateQuotation = async (quotation: UpsertQuotationBody) => {
   const supabase = await createClient()
 
   const { id, ...updatedQuotation } = quotation
 
   if (!id) throw new Error(UPDATE_QUOTATION_ERROR)
 
-  const { data, error } = await supabase.from(QUOTATIONS).update(updatedQuotation).eq("id", id)
+  const { error } = await supabase.from(QUOTATIONS).update(updatedQuotation).eq("id", id)
 
   if (error) throw new Error(UPDATE_QUOTATION_ERROR)
 
@@ -83,7 +84,7 @@ export const updateQuotation = async (quotation: IUpsertQuotationBody) => {
 
 export const deleteQuotationById = async ({ id }: IByIdParams) => {
   const supabase = await createClient()
-  const { error } = await supabase.from(QUOTATIONS).delete().eq("id", Number(id))
+  const { error } = await supabase.from(QUOTATIONS).delete().eq("id", id)
 
   if (error) throw new Error(DELETE_QUOTATION_ERROR)
 
@@ -97,7 +98,7 @@ export const deleteQuotationsById = async ({ ids }: IByIdsParams) => {
     .delete()
     .in(
       "id",
-      ids.map((id) => Number(id))
+      ids.map((id) => id)
     )
 
   if (error) throw new Error(DELETE_QUOTATIONS_ERROR)

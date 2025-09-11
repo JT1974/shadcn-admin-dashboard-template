@@ -1,6 +1,6 @@
 import { getPartners } from "@/app/dashboard/partners/_lib/actions"
 import QuotationForm from "@/app/dashboard/quotations/_components/quotation-form"
-import BackButton from "@/components/back-button"
+import LinkButton from "@/components/link-button"
 import { Button } from "@/components/ui/button"
 
 export default async function Page() {
@@ -16,7 +16,7 @@ export default async function Page() {
         actionButtons={
           <>
             <Button type="submit">Submit</Button>
-            <BackButton />
+            <LinkButton to="/dashboard/quotations">Back</LinkButton>
           </>
         }
       />

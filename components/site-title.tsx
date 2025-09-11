@@ -1,11 +1,10 @@
 "use client"
 
-import { useParams, useSelectedLayoutSegment } from "next/navigation"
+import { useSelectedLayoutSegment } from "next/navigation"
 
 function SiteTitle() {
-  const id = useParams()?.id
   const segment = useSelectedLayoutSegment()
-  const title = segment ? `${segment}${id ? ` — ${id}` : ""}` : "Dashboard"
+  const title = segment ?? "Dashboard"
 
   return <h1 className="text-base font-medium capitalize">{title}</h1>
 }

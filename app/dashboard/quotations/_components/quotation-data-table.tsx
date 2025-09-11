@@ -53,6 +53,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -61,8 +72,9 @@ import { formatDate } from "@/lib/utils"
 import QuotationForm from "@/app/dashboard/quotations/_components/quotation-form"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
+import { deleteQuotationById } from "@/app/dashboard/quotations/_lib/actions"
 
-export function QuotationsDataTable({ data, rowCount }: { data: IQuotationDetails[]; rowCount: number }) {
+export function QuotationsDataTable({ data, rowCount }: { data: QuotationDetails[]; rowCount: number }) {
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -83,7 +95,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotationDetail
   const router = useRouter()
   const pathname = usePathname()
 
-  const columns = React.useMemo<ColumnDef<IQuotationDetails>[]>(
+  const columns = React.useMemo<ColumnDef<QuotationDetails>[]>(
     () => [
       {
         id: "select",
@@ -175,30 +187,64 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotationDetail
       },
       {
         id: "actions",
-        cell: () => (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-                size="icon"
-              >
-                <IconDotsVertical />
-                <span className="sr-only">Open menu</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32">
-              <DropdownMenuItem>Edit</DropdownMenuItem>
-              <DropdownMenuItem>Make a copy</DropdownMenuItem>
-              <DropdownMenuItem>Favorite</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        cell: ({
+          row: {
+            original: { id }
+          }
+        }) => (
+          <AlertDialog>
+            {/* NOTE: opens a dialog (alert) window from the dropdown menu, when the trigger button is pushed */}
+            {/* the dropdown menu must be inside/encased in the dialog */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="-[state=open]:bg-muted text-muted-foreground flex size-8"
+                  size="icon"
+                >
+                  <IconDotsVertical />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-32">
+                <DropdownMenuItem className="p-0">
+                  <Link href={`/dashboard/quotations/${id}`} className="size-full px-2 py-1.5">
+                    Edit
+                  </Link>
+                </DropdownMenuItem>
+                {/* TODO: az original item-et ráküldeni a createQuotation fgv-re az automatikus propok nélkül --> mapper kell rá */}
+                <DropdownMenuItem>Duplicate</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+                </AlertDialogTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the quotation and remove it from the
+                  database.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={async () => {
+                    await deleteQuotationById({ id })
+                    router.refresh()
+                  }}
+                >
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )
       }
     ],
-    [data]
+    [router]
   )
 
   const table = useReactTable({
@@ -423,7 +469,7 @@ export function QuotationsDataTable({ data, rowCount }: { data: IQuotationDetail
   )
 }
 
-function TableCellViewer({ item }: { item: IQuotationDetails }) {
+function TableCellViewer({ item }: { item: QuotationDetails }) {
   const router = useRouter()
   const isMobile = useIsMobile()
 

@@ -1,10 +1,10 @@
 import { getQuotationById } from "@/app/dashboard/quotations/_lib/actions"
 import QuotationForm from "@/app/dashboard/quotations/_components/quotation-form"
 import { Button } from "@/components/ui/button"
-import BackButton from "@/components/back-button"
+import LinkButton from "@/components/link-button"
 
 interface Props {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: number }>
 }
 
 export default async function Page({ params }: Props) {
@@ -27,7 +27,7 @@ export default async function Page({ params }: Props) {
           actionButtons={
             <>
               <Button type="submit">Submit</Button>
-              <BackButton />
+              <LinkButton to="/dashboard/quotations">Back</LinkButton>
             </>
           }
         />

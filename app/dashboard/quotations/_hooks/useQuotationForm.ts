@@ -3,14 +3,14 @@ import {
   mapQuotationFormToQuotationBody,
   mapQuotationDetailsToQuotationForm
 } from "@/app/dashboard/quotations/_lib/mappers"
-import { quotationFormSchema } from "@/app/dashboard/quotations/_lib/schemas"
+import { QuotationForm, quotationFormSchema } from "@/app/dashboard/quotations/_lib/schemas"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useState } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { toast } from "sonner"
 
 interface Props {
-  prefill?: IQuotationDetails
+  prefill?: QuotationDetails
   onSave?: () => void
 }
 
@@ -23,12 +23,12 @@ function useQuotationForm({ prefill, onSave }: Props) {
     handleSubmit,
     setValue,
     reset
-  } = useForm<IQuotationForm>({
+  } = useForm<QuotationForm>({
     resolver: zodResolver(quotationFormSchema),
     defaultValues: mapQuotationDetailsToQuotationForm(prefill)
   })
 
-  const onSubmit: SubmitHandler<IQuotationForm> = async (form) => {
+  const onSubmit: SubmitHandler<QuotationForm> = async (form) => {
     if (!isDirty) return
 
     setIsLoading(true)

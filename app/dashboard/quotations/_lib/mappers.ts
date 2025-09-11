@@ -1,7 +1,8 @@
+import { QuotationForm } from "@/app/dashboard/quotations/_lib/schemas"
 import { SupabaseEnums } from "@/constants/supabase"
 
 // map prefill values to form values
-export const mapQuotationDetailsToQuotationForm = (quotation?: IQuotationDetails) => {
+export const mapQuotationDetailsToQuotationForm = (quotation?: QuotationDetails) => {
   return {
     ...quotation,
     taskIds: quotation?.tasks?.map((task) => task.id) ?? [],
@@ -25,7 +26,7 @@ export const mapQuotationFormToQuotationBody = ({
   fulfillmentTime,
   fulfillmentTimeUnit,
   ...form
-}: IQuotationForm) => {
+}: QuotationForm) => {
   return {
     ...form,
     tasks: taskIds,

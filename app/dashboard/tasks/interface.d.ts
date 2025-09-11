@@ -1,1 +1,0 @@
-type ITask = TasksDetailsView["Row"]
