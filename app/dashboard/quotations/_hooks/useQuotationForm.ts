@@ -5,7 +5,7 @@ import {
 } from "@/app/dashboard/quotations/_lib/mappers"
 import { QuotationForm, quotationFormSchema } from "@/app/dashboard/quotations/_lib/schemas"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { toast } from "sonner"
 
@@ -15,10 +15,9 @@ interface Props {
 }
 
 function useQuotationForm({ prefill, onSave }: Props) {
-  const [isLoading, setIsLoading] = useState(false)
   const {
     control,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, isSubmitting },
     register,
     handleSubmit,
     setValue,
@@ -31,8 +30,6 @@ function useQuotationForm({ prefill, onSave }: Props) {
   const onSubmit: SubmitHandler<QuotationForm> = async (form) => {
     if (!isDirty) return
 
-    setIsLoading(true)
-
     await (prefill
       ? updateQuotation({
           ...mapQuotationFormToQuotationBody(form),
@@ -44,13 +41,9 @@ function useQuotationForm({ prefill, onSave }: Props) {
 
     onSave?.()
 
-    if (!prefill) {
-      reset()
-    }
+    reset()
 
     toast.success("Quotation saved successfully!")
-
-    setIsLoading(false)
   }
 
   useEffect(() => {
@@ -63,7 +56,7 @@ function useQuotationForm({ prefill, onSave }: Props) {
     setValue,
     errors,
     onSubmit: handleSubmit(onSubmit),
-    isLoading
+    isLoading: isSubmitting
   }
 }
 

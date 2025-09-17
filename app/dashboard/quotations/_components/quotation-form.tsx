@@ -29,7 +29,7 @@ function QuotationForm({ customers = [], prefill, onSave, actionButtons, disable
 
   return (
     <form className={cn("flex flex-col justify-between gap-4", className)} onSubmit={onSubmit}>
-      <fieldset className="flex w-full flex-col gap-4" disabled={disabled}>
+      <fieldset className="flex w-full flex-col gap-4" disabled={disabled || isLoading}>
         {customers.length > 0 && (
           <div className="flex items-start gap-2">
             <Controller
