@@ -1,26 +1,19 @@
 "use client"
 
 import * as React from "react"
-import { type Icon } from "@tabler/icons-react"
 
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
+  SidebarMenuItem
 } from "@/components/ui/sidebar"
+import { navigation } from "@/constants/navigation"
 
-export function NavSecondary({
-  items,
-  ...props
-}: {
-  items: {
-    title: string
-    url: string
-    icon: Icon
-  }[]
-} & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+export function NavSecondary({ ...props }: React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  const items = navigation.navSecondary
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>

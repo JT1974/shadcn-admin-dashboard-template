@@ -19,7 +19,7 @@ export default async function Template({
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader />
-        <div className="@container/main flex flex-1 flex-col p-4 md:p-6">{children}</div>
+        <div className="@container/main flex flex-1 flex-col gap-6 p-4 md:gap-9 md:p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )

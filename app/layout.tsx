@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Dashboard - Robbkontrol Kft",
+  title: "Robbkontrol Admin Dashboard",
   description: "Robbkontrol Kft. admin dashboard"
 }
 

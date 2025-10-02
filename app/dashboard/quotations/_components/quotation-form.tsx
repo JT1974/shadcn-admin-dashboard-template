@@ -1,10 +1,11 @@
 "use client"
 
 import useQuotationForm from "@/app/dashboard/quotations/_hooks/useQuotationForm"
-import InputWithLabel from "@/components/input-with-label"
 import SelectWithLabel from "@/components/select-with-label"
 import TextareaWithLabel from "@/components/textarea-with-label"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { getSupabaseEnumValues } from "@/constants/supabase"
 import { cn } from "@/lib/utils"
 import { IconPlus } from "@tabler/icons-react"
@@ -28,8 +29,10 @@ function QuotationForm({ customers = [], prefill, onSave, actionButtons, disable
   })
 
   return (
-    <form className={cn("flex flex-col justify-between gap-4", className)} onSubmit={onSubmit}>
-      <fieldset className="flex w-full flex-col gap-4" disabled={disabled || isLoading}>
+    <form className={cn("flex flex-col justify-between gap-9", className)} onSubmit={onSubmit}>
+      <fieldset className="flex w-full flex-col gap-6" disabled={disabled || isLoading}>
+        {/* TODO: ehelyett kell egy partnerSelector, és ha választunk, a customerId-t seteljük a kiválasztott id-ra
+        és így a QuotationForm-ból ki lehet venni a customer-t, és egy ugyanilyen kell taskSelector-nak */}
         {customers.length > 0 && (
           <div className="flex items-start gap-2">
             <Controller
@@ -111,58 +114,84 @@ function QuotationForm({ customers = [], prefill, onSave, actionButtons, disable
             )
           }}
         />
-        <InputWithLabel
-          label="Fulfillment time"
-          type="number"
-          // add transform function to convert string to number
-          {...register("fulfillmentTime", {
-            setValueAs: (v) => (v === "" ? undefined : parseInt(v, 10))
-          })}
-          className="flex flex-col gap-3"
-          error={errors.fulfillmentTime?.message}
-        />
-        <Controller
-          control={control}
-          name="fulfillmentTimeUnit"
-          render={({ field: { name, onChange, value }, fieldState: { error } }) => {
-            return (
-              <SelectWithLabel
-                name={name}
-                value={value}
-                onSelect={onChange}
-                options={getSupabaseEnumValues("workingTimeUnit")}
-                className="flex flex-col gap-3"
-                error={error?.message}
+
+        <div className="flex grow flex-col gap-3">
+          <Label htmlFor="fulfillmentTime">Fulfillment time</Label>
+
+          <div className="flex flex-wrap gap-4">
+            <div className="grow">
+              <Input
+                type="number"
+                // add transform function to convert string to number
+                {...register("fulfillmentTime", {
+                  setValueAs: (v) => (v === "" ? undefined : parseInt(v, 10))
+                })}
               />
-            )
-          }}
-        />
-        <InputWithLabel
-          label="Payment time"
-          type="number"
-          // add transform function to convert string to number
-          {...register("paymentTime", {
-            setValueAs: (v) => (v === "" ? undefined : parseInt(v, 10))
-          })}
-          className="flex flex-col gap-3"
-          error={errors.paymentTime?.message}
-        />
-        <Controller
-          control={control}
-          name="paymentTimeUnit"
-          render={({ field: { name, onChange, value }, fieldState: { error } }) => {
-            return (
-              <SelectWithLabel
-                name={name}
-                value={value}
-                onSelect={onChange}
-                options={getSupabaseEnumValues("workingTimeUnit")}
-                className="flex flex-col gap-3"
-                error={error?.message}
+            </div>
+
+            <Controller
+              control={control}
+              name="fulfillmentTimeUnit"
+              render={({ field: { name, onChange, value }, fieldState: { error } }) => {
+                return (
+                  <SelectWithLabel
+                    name={name}
+                    value={value}
+                    onSelect={onChange}
+                    options={getSupabaseEnumValues("workingTimeUnit")}
+                    className="min-w-32 grow"
+                    error={error?.message}
+                  />
+                )
+              }}
+            />
+          </div>
+
+          {errors.fulfillmentTime?.message && (
+            <p className="text-sm text-red-600 dark:text-red-400/60" id="fulfillmentTime-error">
+              {errors.fulfillmentTime.message}
+            </p>
+          )}
+        </div>
+
+        <div className="flex grow flex-col gap-3">
+          <Label htmlFor="paymentTime">Payment time</Label>
+
+          <div className="flex flex-wrap gap-4">
+            <div className="grow">
+              <Input
+                type="number"
+                // add transform function to convert string to number
+                {...register("paymentTime", {
+                  setValueAs: (v) => (v === "" ? undefined : parseInt(v, 10))
+                })}
               />
-            )
-          }}
-        />
+            </div>
+
+            <Controller
+              control={control}
+              name="paymentTimeUnit"
+              render={({ field: { name, onChange, value }, fieldState: { error } }) => {
+                return (
+                  <SelectWithLabel
+                    name={name}
+                    value={value}
+                    onSelect={onChange}
+                    options={getSupabaseEnumValues("workingTimeUnit")}
+                    className="min-w-32 grow"
+                    error={error?.message}
+                  />
+                )
+              }}
+            />
+          </div>
+
+          {errors.paymentTime?.message && (
+            <p className="text-sm text-red-600 dark:text-red-400/60" id="paymentTime-error">
+              {errors.paymentTime.message}
+            </p>
+          )}
+        </div>
       </fieldset>
 
       <fieldset className="flex flex-col gap-4" disabled={disabled || isLoading}>

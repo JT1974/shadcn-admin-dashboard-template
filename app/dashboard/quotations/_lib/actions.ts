@@ -61,11 +61,11 @@ export const getQuotationById = async ({ id }: IByIdParams) => {
 export const createQuotation = async (quotation: UpsertQuotationBody) => {
   const supabase = await createClient()
 
-  const { error } = await supabase.from(QUOTATIONS).insert(quotation)
+  const { data, error } = await supabase.from(QUOTATIONS).insert(quotation).select().single()
 
   if (error) throw new Error(CREATE_QUOTATION_ERROR)
 
-  return
+  return data
 }
 
 export const updateQuotation = async (quotation: UpsertQuotationBody) => {
@@ -75,11 +75,11 @@ export const updateQuotation = async (quotation: UpsertQuotationBody) => {
 
   if (!id) throw new Error(UPDATE_QUOTATION_ERROR)
 
-  const { error } = await supabase.from(QUOTATIONS).update(updatedQuotation).eq("id", id)
+  const { data, error } = await supabase.from(QUOTATIONS).update(updatedQuotation).eq("id", id).select().single()
 
   if (error) throw new Error(UPDATE_QUOTATION_ERROR)
 
-  return
+  return data
 }
 
 export const deleteQuotationById = async ({ id }: IByIdParams) => {

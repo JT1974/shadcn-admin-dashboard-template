@@ -13,15 +13,13 @@ export default async function Page({ params }: Props) {
 
   return (
     <>
-      <div className="mb-9 flex w-full flex-col gap-4">
-        <div className="flex grow flex-col">
-          <span className="text-foreground text-2xl font-bold">{quotation.number}</span>
-          <span className="text-muted-foreground font-semibold capitalize">
-            {quotation.customer.name} {quotation.customer.companyForm}.
-          </span>
-        </div>
+      <div className="flex w-full flex-col">
+        <span className="text-foreground text-2xl font-bold">{quotation.number}</span>
+        <span className="text-muted-foreground font-semibold capitalize">
+          {quotation.customer.name} {quotation.customer.companyForm}.
+        </span>
       </div>
-      <div className="flex max-w-184 flex-col gap-4 overflow-y-auto text-sm">
+      <div className="flex w-full max-w-184 flex-col gap-4 overflow-y-auto text-sm">
         <QuotationForm
           prefill={quotation}
           actionButtons={

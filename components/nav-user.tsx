@@ -14,9 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { LogoutLink } from "@/components/logout-link"
-import { ICurrentUser } from "@/hooks/use-current-user"
+import { useCurrentUser } from "@/hooks/use-current-user"
 
-export function NavUser({ user }: { user: ICurrentUser }) {
+export function NavUser() {
+  const user = useCurrentUser()
   const { isMobile } = useSidebar()
 
   return (

@@ -1,12 +1,11 @@
-export const COMPANY_NAME = "Acme Inc."
-export const SITE_NAME = "Admin Dashboard"
-export const SITE_DESCRIPTION = "Admin Dashboard Description"
-export const SITE_URL = "https://admin-dashboard.example.com"
+export const COMPANY_NAME = "Robbkontrol"
+export const SITE_NAME = "Dashboard"
+export const SITE_DESCRIPTION = "Robbkontrol Kft. admin dashboard"
+export const SITE_URL = "https://dashboard.robbkontrolkft.hu"
 export const SITE_LOCALE = "hu_HU"
 export const SUPPORTED_SITE_LOCALES = ["en_US", "hu_HU"]
 export const DEFAULT_LOCALE = "hu"
 export const SUPPORTED_LOCALES = ["en", "hu"]
-export const SITE_OG_IMAGE = "/og-image.png"
 export const DEFAULT_PAGINATION_LIMIT = 10
 export const MAX_PAGINATION_LIMIT = 100
 export const DATE_FORMAT = "yyyy-MM-dd"

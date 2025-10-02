@@ -9,7 +9,7 @@ interface Props {
 export default async function Page({ searchParams }: Props) {
   const { page = 1, limit = DEFAULT_PAGINATION_LIMIT, sort, order } = await searchParams
 
-  const { data: quotations_details, count } = await getQuotations({
+  const quotationsPromise = getQuotations({
     select: "*",
     order: {
       field: sort ? (typeof sort === "string" ? sort : sort[0]) : "createdAt",
@@ -21,5 +21,5 @@ export default async function Page({ searchParams }: Props) {
     }
   })
 
-  return <QuotationsDataTable data={quotations_details} rowCount={count ?? 0} />
+  return <QuotationsDataTable quotationsPromise={quotationsPromise} />
 }

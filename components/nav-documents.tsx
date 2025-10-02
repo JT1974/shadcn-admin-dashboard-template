@@ -1,19 +1,13 @@
 "use client"
 
-import {
-  IconDots,
-  IconFolder,
-  IconShare3,
-  IconTrash,
-  type Icon,
-} from "@tabler/icons-react"
+import { IconDots, IconFolder, IconShare3, IconTrash } from "@tabler/icons-react"
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import {
   SidebarGroup,
@@ -22,19 +16,13 @@ import {
   SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
+  useSidebar
 } from "@/components/ui/sidebar"
+import { navigation } from "@/constants/navigation"
 
-export function NavDocuments({
-  items,
-}: {
-  items: {
-    name: string
-    url: string
-    icon: Icon
-  }[]
-}) {
+export function NavDocuments() {
   const { isMobile } = useSidebar()
+  const items = navigation.documents
 
   return (
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
@@ -50,10 +38,7 @@ export function NavDocuments({
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuAction
-                  showOnHover
-                  className="data-[state=open]:bg-accent rounded-sm"
-                >
+                <SidebarMenuAction showOnHover className="data-[state=open]:bg-accent rounded-sm">
                   <IconDots />
                   <span className="sr-only">More</span>
                 </SidebarMenuAction>

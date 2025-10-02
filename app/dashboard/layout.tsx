@@ -1,8 +1,9 @@
+import { SITE_DESCRIPTION, SITE_NAME } from "@/constants/general"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Dashboard - Robbkontrol Kft",
-  description: "Robbkontrol Kft. admin dashboard"
+  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION
 }
 
 export default async function Layout({

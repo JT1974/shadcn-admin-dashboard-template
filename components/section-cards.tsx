@@ -2,10 +2,22 @@ import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { string } from "zod"
 
+// TODO: a komponenst a dashboard page-en be kell csomagolni egy suspense-be, ami kap egy fallback spinnert
+// ehhez ezt a konténer divet is ki kell vinni a parentbe és adni neki egy height-ot, hogy abban középen legyen a spinner
+// a fetchingnek itt kell megtörténnie
 export function SectionCards() {
+  const data = {
+    measure: "",
+    amount: "$1,250.00",
+    change: "12.5%",
+    trending: "up",
+    summary: "Trending up this month",
+    details: "Visitors for the last 6 months"
+  }
   return (
-    <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+    <>
       <Card className="@container/card">
         <CardHeader>
           <CardDescription>Total Revenue</CardDescription>
@@ -78,6 +90,6 @@ export function SectionCards() {
           <div className="text-muted-foreground">Meets growth projections</div>
         </CardFooter>
       </Card>
-    </div>
+    </>
   )
 }

@@ -30,7 +30,7 @@ function useQuotationForm({ prefill, onSave }: Props) {
   const onSubmit: SubmitHandler<QuotationForm> = async (form) => {
     if (!isDirty) return
 
-    await (prefill
+    const quotation = await (prefill
       ? updateQuotation({
           ...mapQuotationFormToQuotationBody(form),
           id: prefill.id
@@ -41,7 +41,11 @@ function useQuotationForm({ prefill, onSave }: Props) {
 
     onSave?.()
 
-    reset()
+    // TODO: mentés után az update form (errorok és dirtyFieldek) resetelődjenek, az értékek pedig maradjanak meg,
+    // így nem lehet majd mégegyszer elküldeni változatlan értékekkel, de nem kell törölni csak a create formot
+    // ha megvan a partnerSelector, akkor a QuotationForm type-ból ki lehet venni a customer-t
+    // és akkor ez is jó lesz
+    //reset(mapQuotationDetailsToQuotationForm(quotation))
 
     toast.success("Quotation saved successfully!")
   }

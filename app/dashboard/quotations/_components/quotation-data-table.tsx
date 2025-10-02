@@ -1,333 +1,39 @@
 "use client"
 
-import * as React from "react"
-import {
-  IconChevronDown,
-  IconChevronLeft,
-  IconChevronRight,
-  IconChevronsLeft,
-  IconChevronsRight,
-  IconCircleCheckFilled,
-  IconCircleXFilled,
-  IconDotsVertical,
-  IconLayoutColumns,
-  IconLoader,
-  IconPlus,
-  IconSortAscending,
-  IconSortDescending,
-  IconTrashFilled
-} from "@tabler/icons-react"
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-  VisibilityState
-} from "@tanstack/react-table"
-import { useIsMobile } from "@/hooks/use-mobile"
-import { Badge } from "@/components/ui/badge"
+import { IconPlus, IconSortAscending, IconSortDescending } from "@tabler/icons-react"
+import { flexRender } from "@tanstack/react-table"
+
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger
-} from "@/components/ui/drawer"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
-} from "@/components/ui/alert-dialog"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import Link from "next/link"
-import { formatDate } from "@/lib/utils"
-import QuotationForm from "@/app/dashboard/quotations/_components/quotation-form"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { DEFAULT_PAGINATION_LIMIT } from "@/constants/general"
-import { deleteQuotationById } from "@/app/dashboard/quotations/_lib/actions"
+import TableColumnsToggle from "@/components/table-columns-toggle"
+import useQuotationsDataTable from "@/app/dashboard/quotations/_hooks/useQuotationsDataTable"
+import TablePagination from "@/components/table-pagination"
+import { use } from "react"
 
-export function QuotationsDataTable({ data, rowCount }: { data: QuotationDetails[]; rowCount: number }) {
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-
-  const params = useSearchParams()
-  const currentSearchStr = params.toString()
-  const page = params.get("page")
-  const limit = params.get("limit")
-  const sort = params.getAll("sort")
-  const order = params.getAll("order")
-  const [pagination, setPagination] = React.useState({
-    pageIndex: Number(page) >= 1 ? Number(page) - 1 : 0, // cannot be less, than 1
-    pageSize: Number(limit) || DEFAULT_PAGINATION_LIMIT // cannot be less, than 1
-  })
-  const [sorting, setSorting] = React.useState<SortingState>(
-    sort?.map((s, i) => ({ id: s, desc: order.at(i) !== "asc" })) ?? []
-  )
-  const router = useRouter()
-  const pathname = usePathname()
-
-  const columns = React.useMemo<ColumnDef<QuotationDetails>[]>(
-    () => [
-      {
-        id: "select",
-        header: ({ table }) => (
-          <div className="flex items-center justify-center">
-            <Checkbox
-              checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-              onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-              aria-label="Select all"
-            />
-          </div>
-        ),
-        cell: ({ row }) => (
-          <div className="flex items-center justify-center">
-            <Checkbox
-              checked={row.getIsSelected()}
-              onCheckedChange={(value) => row.toggleSelected(!!value)}
-              aria-label="Select row"
-            />
-          </div>
-        )
-      },
-      {
-        accessorKey: "number",
-        header: "Number",
-        cell: ({ row }) => {
-          return <TableCellViewer item={row.original} />
-        },
-        enableHiding: false
-      },
-      {
-        accessorKey: "description",
-        header: "Description",
-        cell: ({ row }) => <p className="max-w-160 text-wrap">{row.original.description}</p>,
-        enableSorting: false
-      },
-      {
-        accessorKey: "reference",
-        header: "Reference",
-        cell: ({ row }) => row.original.reference
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        cell: ({ row }) => (
-          <Badge variant="outline" className="text-muted-foreground px-1.5">
-            {row.original.status === "accepted" && (
-              <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-            )}
-            {row.original.status === "rejected" && <IconCircleXFilled className="fill-red-500 dark:fill-red-400" />}
-            {row.original.status === "deleted" && <IconTrashFilled className="fill-gray-500 dark:fill-gray-400" />}
-            {row.original.status === "created" && <IconLoader color="royalblue" />}
-            {row.original.status}
-          </Badge>
-        ),
-        enableHiding: false
-      },
-      {
-        accessorKey: "tasks",
-        header: "Tasks",
-        cell: ({ row }) => (
-          <div className="flex max-w-40 flex-wrap items-center gap-1">
-            {row.original.tasks?.map((task) => (
-              <Link key={task.id} href={`/dashboard/tasks/${task.id}`}>
-                <Badge variant="outline" className="text-muted-foreground px-1.5">
-                  {/* taskStatus: "open" | "inprogress" | "closed" | "suspended" | "continuous" | "cancelled" */}
-                  {task.status === "closed" ? (
-                    <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
-                  ) : task.status === "suspended" ? (
-                    <IconCircleCheckFilled className="fill-orange-500 dark:fill-orange-400" />
-                  ) : task.status === "cancelled" ? (
-                    <IconCircleCheckFilled className="fill-red-500 dark:fill-red-400" />
-                  ) : (
-                    <IconLoader />
-                  )}
-                  {task.id}
-                </Badge>
-              </Link>
-            ))}
-          </div>
-        ),
-        enableSorting: false
-      },
-      {
-        accessorKey: "createdAt",
-        header: "Created",
-        cell: ({ row }) => <p>{formatDate(row.original.createdAt)}</p>,
-        sortingFn: "datetime"
-      },
-      {
-        id: "actions",
-        cell: ({
-          row: {
-            original: { id }
-          }
-        }) => (
-          <AlertDialog>
-            {/* NOTE: opens a dialog (alert) window from the dropdown menu, when the trigger button is pushed */}
-            {/* the dropdown menu must be inside/encased in the dialog */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="-[state=open]:bg-muted text-muted-foreground flex size-8"
-                  size="icon"
-                >
-                  <IconDotsVertical />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-32">
-                <DropdownMenuItem className="p-0">
-                  <Link href={`/dashboard/quotations/${id}`} className="size-full px-2 py-1.5">
-                    Edit
-                  </Link>
-                </DropdownMenuItem>
-                {/* TODO: az original item-et ráküldeni a createQuotation fgv-re az automatikus propok nélkül --> mapper kell rá */}
-                <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <AlertDialogTrigger asChild>
-                  <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
-                </AlertDialogTrigger>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the quotation and remove it from the
-                  database.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={async () => {
-                    await deleteQuotationById({ id })
-                    router.refresh()
-                  }}
-                >
-                  Continue
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )
-      }
-    ],
-    [router]
-  )
-
-  const table = useReactTable({
-    manualPagination: true,
-    rowCount,
-    data,
-    columns,
-    state: {
-      sorting,
-      columnVisibility,
-      rowSelection,
-      columnFilters,
-      pagination
-    },
-    getRowId: (row) => row.id.toString(),
-    enableRowSelection: true,
-    enableSorting: true,
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues()
-  })
-
-  React.useEffect(() => {
-    let searchStr = ""
-    const newPage = pagination.pageIndex * pagination.pageSize < rowCount ? pagination.pageIndex + 1 : 1
-    searchStr += `page=${newPage}&limit=${pagination.pageSize}`
-    sorting?.forEach(({ id, desc }) => (searchStr += `&sort=${id}&order=${desc ? "desc" : "asc"}`))
-
-    if (searchStr !== currentSearchStr) {
-      router.push(`${pathname}?${searchStr}`)
-    }
-  }, [pagination, sorting, rowCount, router, pathname, currentSearchStr])
+export function QuotationsDataTable({
+  quotationsPromise
+}: {
+  quotationsPromise: Promise<{ data: QuotationDetails[]; count: number | null }>
+}) {
+  const { data, count } = use(quotationsPromise)
+  const { table, columns, router } = useQuotationsDataTable({ data, rowCount: count ?? 0 })
 
   return (
     <div className="flex w-full flex-col items-start gap-6">
       {/* page top buttons */}
       <div className="flex items-center gap-2">
         {/* show/hide columns */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <IconLayoutColumns />
-              <span className="hidden lg:inline">Customize Columns</span>
-              <span className="lg:hidden">Columns</span>
-              <IconChevronDown />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-56">
-            {table
-              .getAllColumns()
-              .filter((column) => typeof column.accessorFn !== "undefined" && column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        {/* add new item */}
+        <TableColumnsToggle table={table} />
+
+        {/* add new quotation */}
         <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/quotations/create")}>
           <IconPlus />
           <span className="hidden lg:inline">Add Quotation</span>
         </Button>
       </div>
 
-      {/* table */}
       <div className="relative flex w-full flex-col gap-4 overflow-auto">
-        {/* table body */}
+        {/* table */}
         <div className="overflow-hidden rounded-lg border">
           <Table>
             <TableHeader className="bg-muted sticky top-0 z-10">
@@ -384,129 +90,10 @@ export function QuotationsDataTable({ data, rowCount }: { data: QuotationDetails
             </TableBody>
           </Table>
         </div>
-        {/* table footer */}
-        <div className="flex items-center justify-between">
-          {/* number of rows selected */}
-          <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
-            selected.
-          </div>
-          {/* pagination */}
-          <div className="flex w-full items-center gap-8 lg:w-fit">
-            {/* limit */}
-            <div className="hidden items-center gap-2 lg:flex">
-              <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                Rows per page
-              </Label>
-              <Select
-                value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value))
-                }}
-              >
-                <SelectTrigger size="sm" className="w-20" id="rows-per-page">
-                  <SelectValue placeholder={table.getState().pagination.pageSize} />
-                </SelectTrigger>
-                <SelectContent side="top">
-                  {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <SelectItem key={pageSize} value={`${pageSize}`}>
-                      {pageSize}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {/* actual page */}
-            <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-            </div>
-            {/* pagination buttons */}
-            <div className="ml-auto flex items-center gap-2 lg:ml-0">
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to first page</span>
-                <IconChevronsLeft />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">Go to previous page</span>
-                <IconChevronLeft />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to next page</span>
-                <IconChevronRight />
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden size-8 lg:flex"
-                size="icon"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">Go to last page</span>
-                <IconChevronsRight />
-              </Button>
-            </div>
-          </div>
-        </div>
+
+        {/* pagination */}
+        <TablePagination table={table} />
       </div>
     </div>
-  )
-}
-
-function TableCellViewer({ item }: { item: QuotationDetails }) {
-  const router = useRouter()
-  const isMobile = useIsMobile()
-
-  return (
-    <Drawer direction={isMobile ? "bottom" : "right"}>
-      <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left">
-          {item.number}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.number ?? "New quotation"}</DrawerTitle>
-          {item.customer && (
-            <DrawerDescription className="capitalize">
-              {item.customer?.name} {item.customer?.companyForm}
-            </DrawerDescription>
-          )}
-        </DrawerHeader>
-        <DrawerFooter className="grow overflow-y-auto px-4 pb-4">
-          <QuotationForm
-            prefill={item}
-            onSave={router.refresh}
-            actionButtons={
-              <>
-                <DrawerClose asChild>
-                  <Button type="submit">Submit</Button>
-                </DrawerClose>
-                <DrawerClose asChild>
-                  <Button variant="outline">Done</Button>
-                </DrawerClose>
-              </>
-            }
-            className="grow"
-          />
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
   )
 }
