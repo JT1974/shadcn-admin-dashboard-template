@@ -8,7 +8,17 @@
     "start": "next start",
     "lint": "next lint --fix",
     "check-type": "tsc --noEmit",
-    "format": "prettier --write */**/*.{js,jsx,json,ts,tsx,scss,css,md}"
+    "format": "prettier --write */**/*.{js,jsx,json,ts,tsx,scss,css,md}",
+    "db:start": "pnpx supabase start -x vector",
+    "db:stop": "pnpx supabase stop",
+    "db:login": "pnpx supabase login",
+    "db:link": "pnpx supabase link",
+    "db:migrate": "pnpx supabase migration new",
+    "db:migrateup": "pnpx supabase migration up",
+    "db:reset": "pnpx supabase db reset",
+    "db:pull": "pnpx supabase db pull",
+    "db:push": "pnpx supabase db push",
+    "db:types": "pnpx supabase gen types --lang=typescript --local > @types/database.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

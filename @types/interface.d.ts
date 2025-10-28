@@ -27,3 +27,13 @@ interface IGenericPaginationResponse<T> {
   data: T[] | null
   count: number | null
 }
+
+interface ICurrentUser {
+  name: string
+  firstname: string
+  lastname: string
+  initials: string
+  email: string
+  isAdmin: boolean
+  phone: string
+}
