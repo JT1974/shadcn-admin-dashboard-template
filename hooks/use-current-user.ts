@@ -1,43 +1,32 @@
 import { createClient } from "@/lib/supabase/client"
-import { UserMetadata } from "@supabase/supabase-js"
+import { User } from "@supabase/supabase-js"
 import { useEffect, useState } from "react"
 
-export interface ICurrentUser {
-  name: string
-  firstname: string
-  lastname: string
-  initials: string
-  email: string
-  isAdmin: boolean
-  phone: string
-  roles: string[]
-}
-
 export const useCurrentUser = (): ICurrentUser => {
-  const [userMeta, setUserMeta] = useState<UserMetadata | null>(null)
+  const [userMeta, setUserMeta] = useState<User | null>(null)
+  const user = userMeta?.user_metadata
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data, error } = await createClient().auth.getSession()
+      const { data, error } = await createClient().auth.getUser()
 
       if (error) {
         console.error(error)
       }
 
-      setUserMeta(data.session?.user.user_metadata ?? null)
+      setUserMeta(data.user ?? null)
     }
 
     fetchUser()
   }, [])
 
   return {
-    name: userMeta?.user ? `${userMeta.user.lastname} ${userMeta.user.firstname}` : "?",
-    firstname: userMeta?.user.firstname ?? "?",
-    lastname: userMeta?.user.lastname ?? "?",
-    initials: userMeta?.user ? `${userMeta.user.lastname[0]}${userMeta.user.firstname[0]}` : "?",
-    email: userMeta?.user?.email ?? "?",
-    isAdmin: userMeta?.user?.isAdmin || false,
-    phone: userMeta?.user?.phone ?? "?",
-    roles: userMeta?.user?.roles ?? []
+    name: user?.lastname || user?.firstname ? `${user.lastname} ${user.firstname}` : "Anonymous",
+    firstname: user?.firstname ?? "Anonymous",
+    lastname: user?.lastname ?? "",
+    initials: user?.lastname || user?.firstname ? `${user.lastname[0]}${user.firstname[0]}` : "A",
+    email: userMeta?.email ?? "-",
+    isAdmin: userMeta?.role === "admin",
+    phone: userMeta?.phone ?? "-"
   }
 }
